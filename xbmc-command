@@ -79,15 +79,8 @@ class Command(object):
 
     return None
 
-class prev_command(Command):
-
-  def __init__(self, xbmc, args):
-    super(prev_command, self).__init__(xbmc, args)
-
-  def __call__(self):
-    rpc = Rpc()
-
-    to_send = rpc.Player.GetActivePlayers()
+  def get_active_player_id(self):
+    to_send = Rpc().Player.GetActivePlayers()
     self.send(to_send)
 
     result = self.wait_for('Player.GetActivePlayers')
@@ -96,10 +89,20 @@ class prev_command(Command):
       raise CommandException('unable to receive active players')
 
     if len(result['result']) <= 0:
+      return -1
+    return result['result'][0]['playerid']
+
+class prev_command(Command):
+
+  def __init__(self, xbmc, args):
+    super(prev_command, self).__init__(xbmc, args)
+
+  def __call__(self):
+    player_id = self.get_active_player_id()
+    if player_id < 0:
       return
 
-    player_id = result['result'][0]['playerid']
-    to_send = rpc.Player.GoTo({'playerid':player_id, 'to': 'previous'})
+    to_send = Rpc().Player.GoTo({'playerid':player_id, 'to': 'previous'})
     self.send(to_send)
 
   @staticmethod
@@ -119,21 +122,10 @@ class next_command(Command):
     super(next_command, self).__init__(xbmc, args)
 
   def __call__(self):
-    rpc = Rpc()
-
-    to_send = rpc.Player.GetActivePlayers()
-    self.send(to_send)
-
-    result = self.wait_for('Player.GetActivePlayers')
-
-    if not result:
-      raise CommandException('unable to receive active players')
-
-    if len(result['result']) <= 0:
+    player_id = self.get_active_player_id()
+    if player_id < 0:
       return
-
-    player_id = result['result'][0]['playerid']
-    to_send = rpc.Player.GoTo({'playerid':player_id, 'to': 'next'})
+    to_send = Rpc().Player.GoTo({'playerid':player_id, 'to': 'next'})
     self.send(to_send)
 
   @staticmethod
@@ -152,22 +144,11 @@ class play_pause_command(Command):
     super(play_pause_command, self).__init__(xbmc, args)
 
   def __call__(self):
-    rpc = Rpc()
-
-    to_send = rpc.Player.GetActivePlayers()
-    self.send(to_send)
-
-    result = self.wait_for('Player.GetActivePlayers')
-
-    if not result:
-      raise CommandException('unable to receive active players')
-
-    if len(result['result']) <= 0:
+    player_id = self.get_active_player_id()
+    if player_id < 0:
       return
 
-    player_id = result['result'][0]['playerid']
-
-    to_send = rpc.Player.PlayPause({'playerid': player_id})
+    to_send = Rpc().Player.PlayPause({'playerid': player_id})
     self.send(to_send)
 
   @staticmethod
