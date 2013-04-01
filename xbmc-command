@@ -98,6 +98,28 @@ class Command(object):
       return -1
     return result['result'][0]['playerid']
 
+class youtube_command(Command):
+
+  def __init__(self, xbmc, args):
+    super(youtube_command, self).__init__(xbmc, args)
+
+  def __call__(self):
+    xbmc_file = 'plugin://plugin.video.youtube/?action=play_video&videoid=%s'
+    xbmc_file = xbmc_file % self.args.id
+    to_send = Rpc().Player.Open({'item':{'file':xbmc_file}})
+    self.send(to_send)
+
+  @staticmethod
+  def add_to_argparse(subparsers):
+    youtube = subparsers.add_parser('youtube', add_help=False,
+        help='play a youtube video', description='Open a youtube video file.')
+    youtube.set_defaults(command=youtube_command)
+
+    youtube.add_argument('--id', dest='id', required=True,
+        metavar='YOUTUBE_ID', help='the youtube video id')
+
+    add_help_to_parser(youtube)
+
 class prev_command(Command):
 
   def __init__(self, xbmc, args):
@@ -114,12 +136,11 @@ class prev_command(Command):
   @staticmethod
   def add_to_argparse(subparsers):
     pause_play = subparsers.add_parser('prev', add_help=False,
-        help='go to previous item in playlist',
-        description='go to previous item in playlist')
+        help='go to the previous item in playlist',
+        description='Go to the previous item in playlist.')
     pause_play.set_defaults(command=prev_command)
 
-    pause_play.add_argument('--help', action='help',
-        help='show this help message and exit')
+    add_help_to_parser(pause_play)
 
 class next_command(Command):
 
@@ -136,12 +157,11 @@ class next_command(Command):
   @staticmethod
   def add_to_argparse(subparsers):
     pause_play = subparsers.add_parser('next', add_help=False,
-        help='go to next item in playlist',
-        description='go to next item in playlist')
+        help='go to the next item in playlist',
+        description='Go to the next item in playlist.')
     pause_play.set_defaults(command=next_command)
 
-    pause_play.add_argument('--help', action='help',
-        help='show this help message and exit')
+    add_help_to_parser(pause_play)
 
 class play_pause_command(Command):
 
@@ -159,11 +179,10 @@ class play_pause_command(Command):
   @staticmethod
   def add_to_argparse(subparsers):
     pause_play = subparsers.add_parser('play-pause', add_help=False,
-        help='toggle play/pause', description='toggle play/pause')
+        help='toggle play/pause', description='Toggle play/pause.')
     pause_play.set_defaults(command=play_pause_command)
 
-    pause_play.add_argument('--help', action='help',
-        help='show this help message and exit')
+    add_help_to_parser(pause_play)
 
 class mute_command(Command):
 
@@ -176,11 +195,10 @@ class mute_command(Command):
   @staticmethod
   def add_to_argparse(subparsers):
     mute = subparsers.add_parser('mute', add_help=False,
-        help='toggle play/pause', description='toggle play/pause')
+        help='toggle mute', description='Toggle mute.')
     mute.set_defaults(command=mute_command)
 
-    mute.add_argument('--help', action='help',
-        help='show this help message and exit')
+    add_help_to_parser(mute)
 
 class volume_command(Command):
 
@@ -201,7 +219,7 @@ class volume_command(Command):
   def add_to_argparse(subparsers):
     volume = subparsers.add_parser('volume', add_help=False,
         help='set or increment/decrement the volume',
-        description='set or increment/decrement the volume')
+        description='Set or increment/decrement the volume.')
     volume.set_defaults(command=volume_command)
 
     volume_group = volume.add_mutually_exclusive_group(required=True)
@@ -218,8 +236,7 @@ class volume_command(Command):
         type=parse_range_zero_to_hundred, metavar='VOLUME',
         help='set the volume to VOLUME (range 0-100)')
 
-    volume.add_argument('--help', action='help',
-        help='show this help message and exit')
+    add_help_to_parser(volume)
 
 def main(args):
   xbmc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -237,6 +254,10 @@ def main(args):
     sys.exit(e.msg)
   finally:
     xbmc.close()
+
+def add_help_to_parser(parser):
+  parser.add_argument('--help', action='help',
+      help='show this help message and exit')
 
 def parse_int(string):
   try:

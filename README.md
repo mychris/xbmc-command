@@ -5,8 +5,8 @@ A simple terminal XBMC command client. Connects to the XBMC Mediacenter via
 TCP and sends JSON-RPC requests. The client is not interactive and can only
 run one command per execution.
 
-It can handle tasks like 'volume up' or 'play next song'. See the help for all
-available commands.
+It can handle tasks like 'volume up' or 'play youtube video'.
+See the help for all available commands.
 
 Installation
 ------------
@@ -28,24 +28,25 @@ Usage
     $ xbmc-command --help
     usage: xbmc-command --host HOST --port PORT [--timeout SEC] [--help]
                         [--version]
-                        {mute,next,play-pause,prev,volume} ...
+                        {mute,next,play-pause,prev,volume,youtube} ...
 
     optional arguments:
-        --host HOST           connect to server at host
-        --port PORT           connect to server at port
-        --timeout SEC         wait SEC till timeout
-        --help                show this help message and exit
-        --version             show program's version number and exit
+        --host HOST         connect to server at host
+        --port PORT         connect to server at port
+        --timeout SEC       wait SEC till timeout
+        --help              show this help message and exit
+        --version           show program's version number and exit
 
     commands:
-        valid XBMC commands
+      valid XBMC commands
 
-        {mute,next,play-pause,prev,volume}
-          mute                toggle play/pause
-          next                go to next item in playlist
-          play-pause          toggle play/pause
-          prev                go to previous item in playlist
-          volume              set or increment/decrement the volume
+      {mute,next,play-pause,prev,volume,youtube}
+        mute                toggle mute
+        next                go to the next item in playlist
+        play-pause          toggle play/pause
+        prev                go to the previous item in playlist
+        volume              set or increment/decrement the volume
+        youtube             play a youtube video
 
 All commands have their own --help flag. Use it to show the help of a specific
 command.
