@@ -1,0 +1,47 @@
+# Maintainer: mychris <just.mychris@googlemail.com>
+pkgname=python-xbmc-command-git
+pkgver=20130401
+pkgrel=1
+pkgdesc="Simple xbmc-command client."
+arch=('any')
+url="https://github.com/mychris/xbmc-command"
+license=('GPL3 or any later version')
+depends=('python3')
+makedepends=('git' 'python-distribute')
+provides=('xbmc-command')
+conflicts=()
+options=(!emptydirs)
+source=()
+md5sums=()
+
+_gitroot=git://github.com/mychris/xbmc-command.git
+_gitname=xbmc-command
+
+pkgver() {
+  cd "${srcdir}/${_gitname}"
+  git describe --always | sed 's/-/_/g;s/v//'
+}
+
+package() {
+  cd "$srcdir"
+  msg "Connecting to GIT server...."
+
+  if [ -d "${_gitname}" ]; then
+    cd "${_gitname}" && git pull origin
+    msg "The local files are updated."
+  else
+    git clone "${_gitroot}" "${_gitname}"
+  fi
+
+  msg "GIT checkout done or server timeout"
+  msg "Starting build..."
+
+  rm -rf "${srcdir}/${_gitname}-build"
+  git clone "${srcdir}/${_gitname}" "${srcdir}/${_gitname}-build"
+  cd "${srcdir}/${_gitname}-build"
+
+  python3 setup.py install --root="${pkgdir}/" --optimize=1
+  install -D -m644 LICENSE "${pkgdir}/usr/share/licenses/${_gitname}/LICENSE"
+}
+
+# vim: ts=2 sts=2 sw=2 et:
