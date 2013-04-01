@@ -11,11 +11,7 @@ See the help for all available commands.
 Installation
 ------------
 
-run
-
-    # python setup.py install
-
-in the root directory of this repository.
+run `# python setup.py install` in the root directory of this repository.
 
 Arch Linux users can use the PKGBUILD-git file to create a package.
 
