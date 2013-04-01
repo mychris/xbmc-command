@@ -27,25 +27,34 @@ import sys
 import time
 
 class Rpc(object):
+
     def __init__(self, method = None):
         self.__method = method
+
     def __getattr__(self, key):
         return Rpc(self.__method + "." + key) if self.__method else Rpc(key)
+
     def __call__(self, *args, **kwargs):
         req = '{"jsonrpc":"2.0", "method":"%s", "params":' % (self.__method)
-        if 'params' in kwargs: req += json.dumps(kwargs['params'])
-        elif len(args) > 0: req += json.dumps(args[0])
-        else: req += '{}'
+        if 'params' in kwargs:
+          req += json.dumps(kwargs['params'])
+        elif len(args) > 0:
+          req += json.dumps(args[0])
+        else:
+          req += '{}'
         req += ', "id":"%s"}'
         return req % (str(kwargs['id'] if 'id' in kwargs else self.__method))
 
 class CommandException(Exception):
+
   def __init__(self, msg):
     self.msg = msg
+
   def __str__(self):
     return self.msg
 
 class Command(object):
+
   def __init__(self, xbmc, args):
     self.xbmc = xbmc
     self.args = args
@@ -57,7 +66,7 @@ class Command(object):
     start = time.time()
 
     decoder = json.JSONDecoder().raw_decode
-    buffer = ''
+    buffer = ""
     while True:
       if self.args.timeout > 0 and time.time() - start > self.args.timeout:
         break
@@ -82,12 +91,9 @@ class Command(object):
   def get_active_player_id(self):
     to_send = Rpc().Player.GetActivePlayers()
     self.send(to_send)
-
     result = self.wait_for('Player.GetActivePlayers')
-
     if not result:
       raise CommandException('unable to receive active players')
-
     if len(result['result']) <= 0:
       return -1
     return result['result'][0]['playerid']
@@ -114,7 +120,6 @@ class prev_command(Command):
 
     pause_play.add_argument('--help', action='help',
         help='show this help message and exit')
-
 
 class next_command(Command):
 
