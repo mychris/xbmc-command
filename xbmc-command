@@ -19,6 +19,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import inspect
 import json
 import os
 import socket
@@ -106,7 +107,7 @@ class play_pause_command(Command):
   def add_to_argparse(subparsers):
     pause_play = subparsers.add_parser('play-pause', add_help=False,
         help='toggle play/pause', description='toggle play/pause')
-    pause_play.set_defaults(command=cmd)
+    pause_play.set_defaults(command=play_pause_command)
 
     pause_play.add_argument('--help', action='help',
         help='show this help message and exit')
@@ -123,7 +124,7 @@ class mute_command(Command):
   def add_to_argparse(subparsers):
     mute = subparsers.add_parser('mute', add_help=False,
         help='toggle play/pause', description='toggle play/pause')
-    mute.set_defaults(command=cmd)
+    mute.set_defaults(command=mute_command)
 
     mute.add_argument('--help', action='help',
         help='show this help message and exit')
@@ -218,8 +219,9 @@ if __name__ == '__main__':
   subparsers = parser.add_subparsers(
       title='commands', description='valid XBMC commands')
 
-  for cmd in (volume_command, play_pause_command, mute_command):
-    cmd.add_to_argparse(subparsers)
+  for name, obj in inspect.getmembers(sys.modules[__name__]):
+    if hasattr(obj, '__bases__') and Command in obj.__bases__:
+      obj.add_to_argparse(subparsers)
 
   main(parser.parse_args())
 
