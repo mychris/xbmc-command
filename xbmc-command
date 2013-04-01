@@ -1,0 +1,209 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import argparse
+import json
+import os
+import socket
+import sys
+import time
+
+class Rpc(object):
+    def __init__(self, method = None):
+        self.__method = method
+    def __getattr__(self, key):
+        return Rpc(self.__method + "." + key) if self.__method else Rpc(key)
+    def __call__(self, *args, **kwargs):
+        req = '{"jsonrpc":"2.0", "method":"%s", "params":' % (self.__method)
+        if 'params' in kwargs: req += json.dumps(kwargs['params'])
+        elif len(args) > 0: req += json.dumps(args[0])
+        else: req += '{}'
+        req += ', "id":"%s"}'
+        return req % (str(kwargs['id'] if 'id' in kwargs else self.__method))
+
+class CommandException(Exception):
+  def __init__(self, msg):
+    self.msg = msg
+  def __str__(self):
+    return self.msg
+
+class Command(object):
+  def __init__(self, xbmc, args):
+    self.xbmc = xbmc
+    self.args = args
+
+  def send(self, msg):
+    self.xbmc.send(bytearray(msg, 'utf-8'))
+
+  def wait_for(self, request_id):
+    start = time.time()
+
+    decoder = json.JSONDecoder().raw_decode
+    buffer = ''
+    while True:
+      if self.args.timeout > 0 and time.time() - start > self.args.timeout:
+        break
+      data = self.xbmc.recv(1024)
+      if not data:
+        return None
+      data = data.decode('utf-8')
+      buffer += data
+
+      while True:
+        j = None
+        try:
+          j, i = decoder(buffer)
+          buffer = buffer[i:]
+        except ValueError:
+          break
+        if j and 'id' in j and j['id'] == request_id:
+          return j
+
+    return None
+
+class play_pause_command(Command):
+
+  def __init__(self, xbmc, args):
+    super(play_pause_command, self).__init__(xbmc, args)
+
+  def __call__(self):
+    rpc = Rpc()
+
+    to_send = rpc.Player.GetActivePlayers()
+    self.send(to_send)
+
+    result = self.wait_for('Player.GetActivePlayers')
+
+    if not result:
+      raise CommandException('unable to receiver active players')
+
+    if len(result['result']) <= 0:
+      return
+
+    player_id = result['result'][0]['playerid']
+
+    to_send = rpc.Player.PlayPause({'playerid': player_id})
+    self.send(to_send)
+
+  @staticmethod
+  def add_to_argparse(subparsers):
+    pause_play = subparsers.add_parser('play-pause', add_help=False,
+        help='toggle play/pause', description='toggle play/pause')
+    pause_play.set_defaults(command=cmd)
+
+    pause_play.add_argument('--help', action='help',
+        help='show this help message and exit')
+
+class mute_command(Command):
+
+  def __init__(self, xbmc, args):
+    super(mute_command, self).__init__(xbmc, args)
+
+  def __call__(self):
+    self.send(Rpc().Application.SetMute({'mute': 'toggle'}))
+
+  @staticmethod
+  def add_to_argparse(subparsers):
+    mute = subparsers.add_parser('mute', add_help=False,
+        help='toggle play/pause', description='toggle play/pause')
+    mute.set_defaults(command=cmd)
+
+    mute.add_argument('--help', action='help',
+        help='show this help message and exit')
+
+class volume_command(Command):
+
+  def __init__(self, xbmc, args):
+    super(volume_command, self).__init__(xbmc, args)
+
+  def __call__(self):
+    if self.args.decrement:
+      vol = 'decrement'
+    elif self.args.increment:
+      vol = 'increment'
+    else:
+      vol = self.args.set
+
+    self.send(Rpc().Application.SetVolume({'volume':vol}))
+
+  @staticmethod
+  def add_to_argparse(subparsers):
+    volume = subparsers.add_parser('volume', add_help=False,
+        help='set or increment/decrement the volume',
+        description='set or increment/decrement the volume')
+    volume.set_defaults(command=volume_command)
+
+    volume_group = volume.add_mutually_exclusive_group(required=True)
+
+    volume_group.add_argument('--increment', dest='increment',
+        action='store_true', default=False,
+        help='increment the volume')
+
+    volume_group.add_argument('--decrement', dest='decrement',
+        action='store_true', default=False,
+        help='decrement the volume')
+
+    volume_group.add_argument('--set', dest='set',
+        type=parse_range_zero_to_hundred, metavar='VOLUME',
+        help='set the volume to VOLUME (range 0-100)')
+
+    volume.add_argument('--help', action='help',
+        help='show this help message and exit')
+
+def main(args):
+  xbmc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  xbmc.settimeout(args.timeout if args.timeout else None)
+
+  try:
+    xbmc.connect((args.host, args.port))
+  except:
+    sys.exit("Unable to connect to host %s:%s" % (args.host, args.port))
+
+  cmd = args.command(xbmc, args)
+  try:
+    cmd()
+  except CommandException as e:
+    sys.exit(e.msg)
+  finally:
+    xbmc.close()
+
+def parse_range_zero_to_hundred(string):
+  try:
+    string = int(string)
+  except ValueError:
+    raise argparse.ArgumentTypeError("invalid int value: '%s'" % string)
+
+  if string < 0 or string > 100:
+    raise argparse.ArgumentTypeError(
+            "int value %d out of range (0-100)" % string)
+  return string
+
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser(
+      description="",
+      prog=os.path.basename(sys.argv[0]), add_help=False)
+
+  parser.add_argument('--host', dest='host', metavar='HOST', required=True,
+      help='connect to server at host')
+
+  parser.add_argument('--port', dest='port', metavar='PORT', required=True,
+      type=int, help='connect to server at port')
+
+  parser.add_argument('--timeout', dest='timeout', metavar='SEC',
+      type=int, default=5, help='wait SEC till timeout')
+
+  parser.add_argument('--help', action='help',
+      help='show this help message and exit')
+
+  parser.add_argument('--version', action='version',
+      version='%(prog)s 1.0.0')
+
+  subparsers = parser.add_subparsers(
+      title='commands', description='valid XBMC commands')
+
+  for cmd in (volume_command, play_pause_command, mute_command):
+    cmd.add_to_argparse(subparsers)
+
+  main(parser.parse_args())
+
+# vim: ft=python ts=2 sts=2 sw=2 et:
