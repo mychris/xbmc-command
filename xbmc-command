@@ -25,6 +25,10 @@ import os
 import socket
 import sys
 import time
+try:
+  import urlparse
+except ImportError:
+  import urllib.parse as urlparse
 
 class Rpc(object):
 
@@ -105,8 +109,19 @@ class youtube_command(Command):
 
   def __call__(self):
     xbmc_file = 'plugin://plugin.video.youtube/?action=play_video&videoid=%s'
-    xbmc_file = xbmc_file % self.args.id
-    to_send = Rpc().Player.Open({'item':{'file':xbmc_file}})
+    if self.args.id:
+      xbmc_file = xbmc_file % self.args.id
+    else:
+      url = urlparse.urlparse(self.args.url)
+      url_query = urlparse.parse_qs(url.query)
+      if not 'v' in url_query:
+        raise CommandException("No youtube video id found in given url.")
+      xbmc_file = xbmc_file % url_query['v'][0]
+
+    if self.args.quality:
+      xbmc_file += '&quality=%s' % self.args.quality
+
+    to_send = Rpc().Player.Open({'item': {'file': xbmc_file}})
     self.send(to_send)
 
   @staticmethod
@@ -115,8 +130,18 @@ class youtube_command(Command):
         help='play a youtube video', description='Open a youtube video file.')
     youtube.set_defaults(command=youtube_command)
 
-    youtube.add_argument('--id', dest='id', required=True,
-        metavar='YOUTUBE_ID', help='the youtube video id')
+    id_group = youtube.add_mutually_exclusive_group(required=True)
+
+    id_group.add_argument('--id', dest='id', metavar='YOUTUBE_ID',
+        help='the youtube video id')
+
+    id_group.add_argument('--url', dest='url', metavar='URL',
+        help='the youtube video url')
+
+    youtube.add_argument('--quality', dest='quality', default=None,
+        choices=['1080p', '720p', 'low'],
+        help='the quality to use. By default, no quality information will be \
+            send and the plugin will choose one.')
 
     add_help_to_parser(youtube)
 
