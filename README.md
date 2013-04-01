@@ -3,12 +3,24 @@ xbmc-command
 
 A simple terminal XBMC command client. Connects to the XBMC Mediacenter via
 TCP and sends JSON-RPC requests. The client is not interactive and can only
-handle one command per execution.
+run one command per execution.
 
-It is designed to handle simple tasks like 'volume up' or 'play next song'.
+It can handle tasks like 'volume up' or 'play next song'. See the help for all
+available commands.
 
 Installation
 ------------
+
+run
+
+    # python setup.py install
+
+in the root directory of this repository.
+
+Arch Linux users can use the PKGBUILD-git file to create a package.
+
+    $ wget https://raw.github.com/mychris/xbmc-command/master/PKGBUILD-git
+    $ makepkg -p PKGBUILD-git
 
 Usage
 -----
@@ -35,7 +47,7 @@ Usage
           prev                go to previous item in playlist
           volume              set or increment/decrement the volume
 
-Each command has its own --help flag. Use it to show the help of a specific
+All commands have their own --help flag. Use it to show the help of a specific
 command.
 
     $ xbmc-command volume --help
@@ -44,5 +56,23 @@ Dependencies
 ------------
 
 * Python3 (should also run with python 2.7)
-* XBMC 12.1 "Frodo" (might work with older versions too)
+* XBMC 12.1 "Frodo" (might work with older versions too) <http://xbmc.org/>
+
+License
+-------
+
+Copyright (C) 2013 Christoph Göttschkes <just dot mychris at googlemail dot com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
