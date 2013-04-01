@@ -79,6 +79,73 @@ class Command(object):
 
     return None
 
+class prev_command(Command):
+
+  def __init__(self, xbmc, args):
+    super(prev_command, self).__init__(xbmc, args)
+
+  def __call__(self):
+    rpc = Rpc()
+
+    to_send = rpc.Player.GetActivePlayers()
+    self.send(to_send)
+
+    result = self.wait_for('Player.GetActivePlayers')
+
+    if not result:
+      raise CommandException('unable to receive active players')
+
+    if len(result['result']) <= 0:
+      return
+
+    player_id = result['result'][0]['playerid']
+    to_send = rpc.Player.GoTo({'playerid':player_id, 'to': 'previous'})
+    self.send(to_send)
+
+  @staticmethod
+  def add_to_argparse(subparsers):
+    pause_play = subparsers.add_parser('prev', add_help=False,
+        help='go to previous item in playlist',
+        description='go to previous item in playlist')
+    pause_play.set_defaults(command=prev_command)
+
+    pause_play.add_argument('--help', action='help',
+        help='show this help message and exit')
+
+
+class next_command(Command):
+
+  def __init__(self, xbmc, args):
+    super(next_command, self).__init__(xbmc, args)
+
+  def __call__(self):
+    rpc = Rpc()
+
+    to_send = rpc.Player.GetActivePlayers()
+    self.send(to_send)
+
+    result = self.wait_for('Player.GetActivePlayers')
+
+    if not result:
+      raise CommandException('unable to receive active players')
+
+    if len(result['result']) <= 0:
+      return
+
+    player_id = result['result'][0]['playerid']
+    to_send = rpc.Player.GoTo({'playerid':player_id, 'to': 'next'})
+    self.send(to_send)
+
+  @staticmethod
+  def add_to_argparse(subparsers):
+    pause_play = subparsers.add_parser('next', add_help=False,
+        help='go to next item in playlist',
+        description='go to next item in playlist')
+    pause_play.set_defaults(command=next_command)
+
+    pause_play.add_argument('--help', action='help',
+        help='show this help message and exit')
+
 class play_pause_command(Command):
 
   def __init__(self, xbmc, args):
@@ -93,7 +160,7 @@ class play_pause_command(Command):
     result = self.wait_for('Player.GetActivePlayers')
 
     if not result:
-      raise CommandException('unable to receiver active players')
+      raise CommandException('unable to receive active players')
 
     if len(result['result']) <= 0:
       return
