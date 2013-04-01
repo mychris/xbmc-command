@@ -233,15 +233,23 @@ def main(args):
   finally:
     xbmc.close()
 
-def parse_range_zero_to_hundred(string):
+def parse_int(string):
   try:
-    string = int(string)
+    return int(string)
   except ValueError:
     raise argparse.ArgumentTypeError("invalid int value: '%s'" % string)
 
+def parse_range_zero_to_hundred(string):
+  string = parse_int(string)
   if string < 0 or string > 100:
     raise argparse.ArgumentTypeError(
             "int value %d out of range (0-100)" % string)
+  return string
+
+def parse_positive_or_zero_int(string):
+  string = parse_int(string)
+  if string < 0:
+    raise argparse.ArgumentTypeError("int value is negative: %d" %string)
   return string
 
 if __name__ == '__main__':
@@ -256,7 +264,7 @@ if __name__ == '__main__':
       type=int, help='connect to server at port')
 
   parser.add_argument('--timeout', dest='timeout', metavar='SEC',
-      type=int, default=5, help='wait SEC till timeout')
+      type=parse_positive_or_zero_int, default=5, help='wait SEC till timeout')
 
   parser.add_argument('--help', action='help',
       help='show this help message and exit')
