@@ -18,318 +18,145 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import argparse
+import importlib
 import inspect
-import json
 import os
 import socket
 import sys
-import time
-try:
-  import urlparse
-except ImportError:
-  import urllib.parse as urlparse
 
-class Rpc(object):
+import xbmc_command
 
-    def __init__(self, method = None):
-        self.__method = method
+__prog__ = xbmc_command.core.prog
+__version__ = xbmc_command.core.version
 
-    def __getattr__(self, key):
-        return Rpc(self.__method + "." + key) if self.__method else Rpc(key)
+__help__ = """
+usage: %s <host> <port> [--timeout <sec>] [--help] [--version]
+                    <command> [args]
 
-    def __call__(self, *args, **kwargs):
-        req = '{"jsonrpc":"2.0", "method":"%s", "params":' % (self.__method)
-        if 'params' in kwargs:
-          req += json.dumps(kwargs['params'])
-        elif len(args) > 0:
-          req += json.dumps(args[0])
-        else:
-          req += '{}'
-        req += ', "id":"%s"}'
-        return req % (str(kwargs['id'] if 'id' in kwargs else self.__method))
+Connects to the XBMC Mediacenter at <host>:<port> via TCP
+and executes the specified command.
 
-class CommandException(Exception):
+Optional arguments:
+  --timeout <sec>   wait <sec> till timeout
+  --help            show this help message and exit
+  --version         output version information and exit
 
-  def __init__(self, msg):
-    self.msg = msg
+Available commands are:
+%%s
+See '%s <host> <port> <command> --help' for more information
+on a specific command.
+""".lstrip() % (__prog__, __prog__)
 
-  def __str__(self):
-    return self.msg
+__version__ = "%s version %s\n" % (__prog__, __version__)
 
-class Command(object):
+def create_help():
+  global __help__
+  available_commands = ''
+  for command in xbmc_command.__all__:
+    available_commands += '  %-17s %s\n'
+    cmd = find_command_class(command)(None)
+    available_commands = available_commands % (command, cmd.short_description)
 
-  def __init__(self, xbmc, args):
-    self.xbmc = xbmc
-    self.args = args
+  __help__ = __help__ % available_commands
 
-  def send(self, msg):
-    self.xbmc.send(bytearray(msg, 'utf-8'))
+def main(host, port, timeout, command, args):
+  orig_command = command
+  command = find_command_class(command)
 
-  def wait_for(self, request_id):
-    start = time.time()
+  if not command:
+    sys.exit("invalid <command> value: '%s'" % orig_command)
 
-    decoder = json.JSONDecoder().raw_decode
-    buffer = ""
-    while True:
-      if self.args.timeout > 0 and time.time() - start > self.args.timeout:
-        break
-      data = self.xbmc.recv(1024)
-      if not data:
-        return None
-      data = data.decode('utf-8')
-      buffer += data
+  xbmc = xbmc_command.core.XBMC(host, port)
 
-      while True:
-        j = None
-        try:
-          j, i = decoder(buffer)
-          buffer = buffer[i:]
-        except ValueError:
-          break
-        if j and 'id' in j and j['id'] == request_id:
-          return j
+  cmd = command(xbmc)
+  args = cmd.parse_args(args)
 
-    return None
-
-  def get_active_player_id(self):
-    to_send = Rpc().Player.GetActivePlayers()
-    self.send(to_send)
-    result = self.wait_for('Player.GetActivePlayers')
-    if not result:
-      raise CommandException('unable to receive active players')
-    if len(result['result']) <= 0:
-      return -1
-    return result['result'][0]['playerid']
-
-class youtube_command(Command):
-
-  def __init__(self, xbmc, args):
-    super(youtube_command, self).__init__(xbmc, args)
-
-  def __call__(self):
-    xbmc_file = 'plugin://plugin.video.youtube/?action=play_video&videoid=%s'
-    if self.args.id:
-      xbmc_file = xbmc_file % self.args.id
-    else:
-      url = urlparse.urlparse(self.args.url)
-      url_query = urlparse.parse_qs(url.query)
-      if not 'v' in url_query:
-        raise CommandException("No youtube video id found in given url.")
-      xbmc_file = xbmc_file % url_query['v'][0]
-
-    if self.args.quality:
-      xbmc_file += '&quality=%s' % self.args.quality
-
-    to_send = Rpc().Player.Open({'item': {'file': xbmc_file}})
-    self.send(to_send)
-
-  @staticmethod
-  def add_to_argparse(subparsers):
-    youtube = subparsers.add_parser('youtube', add_help=False,
-        help='play a youtube video', description='Open a youtube video file.')
-    youtube.set_defaults(command=youtube_command)
-
-    id_group = youtube.add_mutually_exclusive_group(required=True)
-
-    id_group.add_argument('--id', dest='id', metavar='YOUTUBE_ID',
-        help='the youtube video id')
-
-    id_group.add_argument('--url', dest='url', metavar='URL',
-        help='the youtube video url')
-
-    youtube.add_argument('--quality', dest='quality', default=None,
-        choices=['1080p', '720p', 'low'],
-        help='the quality to use. By default, no quality information will be \
-            send and the plugin will choose one.')
-
-    add_help_to_parser(youtube)
-
-class prev_command(Command):
-
-  def __init__(self, xbmc, args):
-    super(prev_command, self).__init__(xbmc, args)
-
-  def __call__(self):
-    player_id = self.get_active_player_id()
-    if player_id < 0:
-      return
-
-    to_send = Rpc().Player.GoTo({'playerid':player_id, 'to': 'previous'})
-    self.send(to_send)
-
-  @staticmethod
-  def add_to_argparse(subparsers):
-    pause_play = subparsers.add_parser('prev', add_help=False,
-        help='go to the previous item in playlist',
-        description='Go to the previous item in playlist.')
-    pause_play.set_defaults(command=prev_command)
-
-    add_help_to_parser(pause_play)
-
-class next_command(Command):
-
-  def __init__(self, xbmc, args):
-    super(next_command, self).__init__(xbmc, args)
-
-  def __call__(self):
-    player_id = self.get_active_player_id()
-    if player_id < 0:
-      return
-    to_send = Rpc().Player.GoTo({'playerid':player_id, 'to': 'next'})
-    self.send(to_send)
-
-  @staticmethod
-  def add_to_argparse(subparsers):
-    pause_play = subparsers.add_parser('next', add_help=False,
-        help='go to the next item in playlist',
-        description='Go to the next item in playlist.')
-    pause_play.set_defaults(command=next_command)
-
-    add_help_to_parser(pause_play)
-
-class play_pause_command(Command):
-
-  def __init__(self, xbmc, args):
-    super(play_pause_command, self).__init__(xbmc, args)
-
-  def __call__(self):
-    player_id = self.get_active_player_id()
-    if player_id < 0:
-      return
-
-    to_send = Rpc().Player.PlayPause({'playerid': player_id})
-    self.send(to_send)
-
-  @staticmethod
-  def add_to_argparse(subparsers):
-    pause_play = subparsers.add_parser('play-pause', add_help=False,
-        help='toggle play/pause', description='Toggle play/pause.')
-    pause_play.set_defaults(command=play_pause_command)
-
-    add_help_to_parser(pause_play)
-
-class mute_command(Command):
-
-  def __init__(self, xbmc, args):
-    super(mute_command, self).__init__(xbmc, args)
-
-  def __call__(self):
-    self.send(Rpc().Application.SetMute({'mute': 'toggle'}))
-
-  @staticmethod
-  def add_to_argparse(subparsers):
-    mute = subparsers.add_parser('mute', add_help=False,
-        help='toggle mute', description='Toggle mute.')
-    mute.set_defaults(command=mute_command)
-
-    add_help_to_parser(mute)
-
-class volume_command(Command):
-
-  def __init__(self, xbmc, args):
-    super(volume_command, self).__init__(xbmc, args)
-
-  def __call__(self):
-    if self.args.decrement:
-      vol = 'decrement'
-    elif self.args.increment:
-      vol = 'increment'
-    else:
-      vol = self.args.set
-
-    self.send(Rpc().Application.SetVolume({'volume':vol}))
-
-  @staticmethod
-  def add_to_argparse(subparsers):
-    volume = subparsers.add_parser('volume', add_help=False,
-        help='set or increment/decrement the volume',
-        description='Set or increment/decrement the volume.')
-    volume.set_defaults(command=volume_command)
-
-    volume_group = volume.add_mutually_exclusive_group(required=True)
-
-    volume_group.add_argument('--increment', dest='increment',
-        action='store_true', default=False,
-        help='increment the volume')
-
-    volume_group.add_argument('--decrement', dest='decrement',
-        action='store_true', default=False,
-        help='decrement the volume')
-
-    volume_group.add_argument('--set', dest='set',
-        type=parse_range_zero_to_hundred, metavar='VOLUME',
-        help='set the volume to VOLUME (range 0-100)')
-
-    add_help_to_parser(volume)
-
-def main(args):
-  xbmc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  xbmc.settimeout(args.timeout if args.timeout else None)
+  xbmc.settimeout(timeout)
 
   try:
-    xbmc.connect((args.host, args.port))
-  except:
-    sys.exit("Unable to connect to host %s:%s" % (args.host, args.port))
+    xbmc.connect()
+  except socket.timeout:
+    sys.exit("Unable to connect to host %s:%s" % (host, port))
 
-  cmd = args.command(xbmc, args)
   try:
-    cmd()
-  except CommandException as e:
+    cmd.call(args)
+  except xbmc_command.core.CommandException as e:
     sys.exit(e.msg)
   finally:
     xbmc.close()
 
-def add_help_to_parser(parser):
-  parser.add_argument('--help', action='help',
-      help='show this help message and exit')
+def parse_args():
+  host = port = command = None
+  timeout = 5
+  arg_len = len(sys.argv)
+  key = 1
+  while key < arg_len:
+    if sys.argv[key] == '--help':
+      create_help()
+      sys.stdout.write(__help__)
+      sys.exit()
+    elif sys.argv[key] == '--version':
+      sys.stdout.write(__version__)
+      sys.exit()
+    elif sys.argv[key] == '--timeout':
+      key += 1
+      timeout = sys.argv[key]
+    elif not host:
+      host = sys.argv[key]
+    elif not port:
+      port = sys.argv[key]
+    elif not command:
+      command = sys.argv[key]
+      key += 1
+      break
 
-def parse_int(string):
+    key += 1
+
+  args = sys.argv[key:]
+  return (host, port, timeout, command, args)
+
+def find_command_class(command):
+  if not command in xbmc_command.__all__:
+    return None
+
+  command = command.lower().replace('-', '_')
+
   try:
-    return int(string)
-  except ValueError:
-    raise argparse.ArgumentTypeError("invalid int value: '%s'" % string)
+    module = importlib.import_module('xbmc_command.%s' % command)
+  except ImportError as e:
+    return None
 
-def parse_range_zero_to_hundred(string):
-  string = parse_int(string)
-  if string < 0 or string > 100:
-    raise argparse.ArgumentTypeError(
-            "int value %d out of range (0-100)" % string)
-  return string
-
-def parse_positive_or_zero_int(string):
-  string = parse_int(string)
-  if string < 0:
-    raise argparse.ArgumentTypeError("int value is negative: %d" %string)
-  return string
+  try:
+    return module.Command
+  except AttributeError:
+    return None
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser(
-      description="",
-      prog=os.path.basename(sys.argv[0]), add_help=False)
+  host, port, timeout, command, args = parse_args()
 
-  parser.add_argument('--host', dest='host', metavar='HOST', required=True,
-      help='connect to server at host')
+  if not host or not port or not command:
+    create_help()
+    sys.stdout.write(__help__)
+    sys.exit(1)
 
-  parser.add_argument('--port', dest='port', metavar='PORT', required=True,
-      type=int, help='connect to server at port')
+  try:
+    port = int(port)
+    if port < 0 or port > 65535:
+      sys.exit("invalid int value: '<port>'")
+  except ValueError:
+    sys.exit("invalid int value: '<port>'")
 
-  parser.add_argument('--timeout', dest='timeout', metavar='SEC',
-      type=parse_positive_or_zero_int, default=5, help='wait SEC till timeout')
+  try:
+    timeout = int(timeout)
+    if timeout < 0:
+      sys.exit("invalid int value: '--timeout'")
+  except ValueError:
+    sys.exit("invalid int value: '--timeout'")
 
-  parser.add_argument('--help', action='help',
-      help='show this help message and exit')
-
-  parser.add_argument('--version', action='version',
-      version='%(prog)s 1.0.0')
-
-  subparsers = parser.add_subparsers(
-      title='commands', description='valid XBMC commands')
-
-  for name, obj in inspect.getmembers(sys.modules[__name__]):
-    if hasattr(obj, '__bases__') and Command in obj.__bases__:
-      obj.add_to_argparse(subparsers)
-
-  main(parser.parse_args())
+  try:
+    main(host, port, timeout, command, args)
+  except KeyboardInterrupt:
+    sys.stdout.write('\n')
+    pass
 
 # vim: ft=python ts=2 sts=2 sw=2 et:

@@ -6,16 +6,18 @@ try:
 except ImportError:
   from distutils.core import setup
 
+import xbmc_command
+
 setup(
-  name='xbmc-command',
-  version='1.0.0',
-  description='Simple xbmc-command client',
-  author='Christoph Göttschkes',
-  author_email='just.mychris@googlemail.com',
-  url='https://github.com/mychris/xbmc-command',
-  download_url='https://github.com/mychris/xbmc-command/tarball/master',
-  packages = [],
+  name = xbmc_command.core.prg,
+  version = xbmc_command.core.version,
+  description = 'Simple xbmc-command client',
+  author = 'Christoph Göttschkes',
+  author_email = 'just.mychris@googlemail.com',
+  url = 'https://github.com/mychris/xbmc-command',
+  download_url = 'https://github.com/mychris/xbmc-command/tarball/master',
   scripts = ['xbmc-command'],
+  packages = ['xbmc_command'],
   classifiers = [
     'Development Status :: 5 - Production/Stable',
     'Environment :: Console',
