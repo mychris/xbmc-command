@@ -9,7 +9,7 @@ except ImportError:
 import xbmc_command
 
 setup(
-  name = xbmc_command.core.prg,
+  name = xbmc_command.core.prog,
   version = xbmc_command.core.version,
   description = 'Simple xbmc-command client',
   author = 'Christoph Göttschkes',
