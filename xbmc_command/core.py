@@ -49,7 +49,7 @@ class XBMC(object):
     start = time.time()
 
     while True:
-      if self.__timeout > 0 and time.time() - start > self.args.timeout:
+      if self.__timeout > 0 and time.time() - start > self.__timeout:
         break
       data = self.__socket.recv(1024)
       if not data:
