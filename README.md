@@ -18,43 +18,50 @@ Arch Linux users can use the PKGBUILD-git file to create a package.
     $ wget https://raw.github.com/mychris/xbmc-command/master/PKGBUILD-git
     $ makepkg -p PKGBUILD-git
 
+If you want to use plyr, the lib must be installed (no runtime error if the
+module is not found). See Optional Dependencies.
+
 Usage
 -----
 
     $ xbmc-command --help
-    usage: xbmc-command --host HOST --port PORT [--timeout SEC] [--help]
-                        [--version]
-                        {mute,next,play-pause,prev,volume,youtube} ...
-
-    optional arguments:
-        --host HOST         connect to server at host
-        --port PORT         connect to server at port
-        --timeout SEC       wait SEC till timeout
-        --help              show this help message and exit
-        --version           show program's version number and exit
-
-    commands:
-      valid XBMC commands
-
-      {mute,next,play-pause,prev,volume,youtube}
-        mute                toggle mute
-        next                go to the next item in playlist
-        play-pause          toggle play/pause
-        prev                go to the previous item in playlist
-        volume              set or increment/decrement the volume
-        youtube             play a youtube video
-
-All commands have their own --help flag. Use it to show the help of a specific
-command.
-
-    $ xbmc-command volume --help
+    usage: xbmc-command <host> <port> [--timeout <sec>] [--help] [--version]
+                        <command> [args]
+    
+    Connects to the XBMC Mediacenter at <host>:<port> via TCP
+    and executes the specified command.
+    
+    Optional arguments:
+      --timeout <sec>   wait <sec> till timeout
+      --help            show this help message and exit
+      --version         output version information and exit
+    
+    Available commands are:
+      mute              Toggle mute
+      volume            Set or increment/decrement the volume
+      play-pause        Toggle play/pause
+      next              Go to the next item in the playlist
+      prev              Go to the previous item in the playlist
+      system            Call system procedure
+      youtube           Play a youtube video
+      slideshow         Starts a Picture slideshow
+      lyrics            Get the lyrics of the current song.
+      notification      Shows a GUI notification
+      scan              Scans the XBMC library
+    
+    See 'xbmc-command <host> <port> <command> --help' for more information
+    on a specific command.
 
 Dependencies
 ------------
 
 * Python2.7
-** Optional: plyr (<https://github.com/sahib/python-glyr>)
 * XBMC 12.1 "Frodo" (might work with older versions too) <http://xbmc.org/>
+
+Optional Dependencies
+---------------------
+
+* plyr: Retrieve lyrics with plyr (<https://github.com/sahib/python-glyr>)
 
 License
 -------
