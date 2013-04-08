@@ -1,6 +1,6 @@
 # Maintainer: mychris <just.mychris@googlemail.com>
-pkgname=python-xbmc-command-git
-pkgver=20130401
+pkgname=python2-xbmc-command-git
+pkgver=20130408
 pkgrel=1
 pkgdesc="Simple xbmc-command client."
 arch=('any')
@@ -8,7 +8,7 @@ url="https://github.com/mychris/xbmc-command"
 license=('GPL3 or any later version')
 depends=('python2')
 optdepend=('python2-glyr-git: retrieve lyrics with plyr')
-makedepends=('git' 'python-distribute')
+makedepends=('git' 'python2-distribute')
 provides=('xbmc-command')
 conflicts=()
 options=(!emptydirs)
