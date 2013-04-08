@@ -13,6 +13,7 @@ __all__ = [
 
   'youtube',
   'slideshow',
+  'lyrics',
 
   'notification',
 
