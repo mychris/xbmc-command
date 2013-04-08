@@ -22,7 +22,7 @@ setup(
     'Development Status :: 5 - Production/Stable',
     'Environment :: Console',
     'Programming Language :: Python',
-    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 2',
     'Operating System :: Unix',
     'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)'
   ],

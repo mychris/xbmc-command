@@ -52,7 +52,8 @@ command.
 Dependencies
 ------------
 
-* Python3 (should also run with python 2.7)
+* Python2.7
+** Optional: plyr (<https://github.com/sahib/python-glyr>)
 * XBMC 12.1 "Frodo" (might work with older versions too) <http://xbmc.org/>
 
 License
