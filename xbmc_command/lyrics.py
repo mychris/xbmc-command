@@ -19,12 +19,11 @@ class Command(core.Command):
           playlist['lyrics'])
       return
 
-    if args.plyr:
-      res = self.__try_plyr(playlist['artist'][0], playlist['album'], playlist['title'])
-      if res:
-        self.__print(playlist['artist'][0], playlist['album'], playlist['title'],
-          res)
-        return
+    res = self.__try_plyr(playlist['artist'][0], playlist['album'], playlist['title'])
+    if res:
+      self.__print(playlist['artist'][0], playlist['album'], playlist['title'],
+        res)
+      return
 
     raise core.CommandException("No lyrics found.")
 
@@ -83,15 +82,14 @@ class Command(core.Command):
       return False
 
     sys.stdout.write('Artist: %s\nAlbum: %s\nTitle: %s\n\n%s\n' % \
-        (artist, album, title, lyrics))
+        (artist, album, title, lyrics.decode('utf-8')))
     return True
 
   def create_parser(self, parser):
     parser.prog = '%s lyrics' % core.prog
-    parser.description = 'Requests and prints the lyrics of the current song.'
-
-    parser.add_argument('--no-plyr', dest='plyr', action='store_false',
-        default=True, help='do not use plyr')
+    parser.description = '''Requests and prints the lyrics of the current song.
+    If plyr should be used to retrieve the lyrics, it must be properly
+    installed.'''
 
     return parser
 
