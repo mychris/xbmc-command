@@ -111,6 +111,10 @@ class Command(object):
       raise CommandException('unable to receive active players')
     if len(result['result']) <= 0:
       return -1
+
+    for player in result['result']:
+      if player['type'] in ('audio', 'video'):
+        return player['playerid']
     return result['result'][0]['playerid']
 
   @property
