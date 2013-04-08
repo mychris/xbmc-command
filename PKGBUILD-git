@@ -1,46 +1,28 @@
 # Maintainer: mychris <just.mychris@googlemail.com>
 pkgname=python2-xbmc-command-git
-pkgver=20130408
+_gitname=xbmc-command
+pkgver=
 pkgrel=1
 pkgdesc="Simple xbmc-command client."
 arch=('any')
 url="https://github.com/mychris/xbmc-command"
 license=('GPL3 or any later version')
 depends=('python2')
-optdepend=('python2-glyr-git: retrieve lyrics with plyr')
+optdepends=('python2-glyr-git: retrieve lyrics with plyr')
 makedepends=('git' 'python2-distribute')
 provides=('xbmc-command')
 conflicts=()
 options=(!emptydirs)
-source=()
-md5sums=()
-
-_gitroot=git://github.com/mychris/xbmc-command.git
-_gitname=xbmc-command
+source=('git://github.com/mychris/xbmc-command')
+md5sums=('SKIP')
 
 pkgver() {
-  cd "${srcdir}/${_gitname}"
-  git describe --always | sed 's/-/_/g;s/v//'
+  cd $_gitname
+  git describe --always | sed 's|-|.|g'
 }
 
 package() {
-  cd "$srcdir"
-  msg "Connecting to GIT server...."
-
-  if [ -d "${_gitname}" ]; then
-    cd "${_gitname}" && git pull origin
-    msg "The local files are updated."
-  else
-    git clone "${_gitroot}" "${_gitname}"
-  fi
-
-  msg "GIT checkout done or server timeout"
-  msg "Starting build..."
-
-  rm -rf "${srcdir}/${_gitname}-build"
-  git clone "${srcdir}/${_gitname}" "${srcdir}/${_gitname}-build"
-  cd "${srcdir}/${_gitname}-build"
-
+  cd $_gitname
   python2 setup.py install --root="${pkgdir}/" --optimize=1
   install -D -m644 LICENSE "${pkgdir}/usr/share/licenses/${_gitname}/LICENSE"
 }
