@@ -1,5 +1,5 @@
 # Maintainer: mychris <just.mychris@googlemail.com>
-pkgname=python2-xbmc-command-git
+pkgname=xbmc-command-git
 _gitname=xbmc-command
 pkgver=
 pkgrel=1
