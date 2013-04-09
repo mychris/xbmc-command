@@ -21,21 +21,31 @@ Arch Linux users can use the PKGBUILD-git file to create a package.
 If you want to use plyr, the lib must be installed (no runtime error if the
 module is not found). See Optional Dependencies.
 
+A configuration file can be used to specify the host, port and timeout.
+It should be installed in ROOT/usr/share/doc/xbmc-command/xbmc-command.cfg.
+Just copy it to ~/.config/xbmc-command.cfg and set the preferences.
+
 Usage
 -----
 
     $ xbmc-command --help
-    usage: xbmc-command <host> <port> [--timeout <sec>] [--help] [--version]
-                        <command> [args]
-    
+    usage: xbmc-command [--host <host>] [--port <port>] [--timeout <sec>]
+                        [--help] [--version] <command> [args]
+
     Connects to the XBMC Mediacenter at <host>:<port> via TCP
     and executes the specified command.
-    
+
+    If --host, --port or --timeout is not present and a config file
+    is present in ~/.config/xbmc-command.cfg, the values specified
+    in this file will be used.
+
     Optional arguments:
-      --timeout <sec>   wait <sec> till timeout
+      --host <host>     connect to server at host <host>
+      --port <port>     connect to server at port <port>
+      --timeout <sec>   wait <sec> till timeout, default 5
       --help            show this help message and exit
       --version         output version information and exit
-    
+
     Available commands are:
       mute              Toggle mute
       volume            Set or increment/decrement the volume
@@ -48,8 +58,8 @@ Usage
       lyrics            Get the lyrics of the current song.
       notification      Shows a GUI notification
       scan              Scans the XBMC library
-    
-    See 'xbmc-command <host> <port> <command> --help' for more information
+
+    See 'xbmc-command <command> --help' for more information
     on a specific command.
 
 Dependencies
