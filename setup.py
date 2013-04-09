@@ -27,7 +27,8 @@ setup(
     'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)'
   ],
   license = 'GPL v3 or later',
-  data_files = [('share/doc/xbmc-command', ['README.md', 'LICENSE'])]
+  data_files = [('share/doc/xbmc-command',
+    ['README.md', 'LICENSE', 'xbmc-command.cfg'])]
 )
 
 # vim: ft=python ts=2 sts=2 sw=2 et:

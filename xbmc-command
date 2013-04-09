@@ -18,6 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+try:
+  import ConfigParser as configparser
+except ImportError:
+  import configparser
+
 import importlib
 import inspect
 import os
@@ -30,20 +35,26 @@ __prog__ = xbmc_command.core.prog
 __version__ = xbmc_command.core.version
 
 __help__ = """
-usage: %s <host> <port> [--timeout <sec>] [--help] [--version]
-                    <command> [args]
+usage: %s [--host <host>] [--port <port>] [--timeout <sec>]
+                    [--help] [--version] <command> [args]
 
 Connects to the XBMC Mediacenter at <host>:<port> via TCP
 and executes the specified command.
 
+If --host, --port or --timeout is not present and a config file
+is present in ~/.config/xbmc-command.cfg, the values specified
+in this file will be used.
+
 Optional arguments:
-  --timeout <sec>   wait <sec> till timeout
+  --host <host>     connect to server at host <host>
+  --port <port>     connect to server at port <port>
+  --timeout <sec>   wait <sec> till timeout, default 5
   --help            show this help message and exit
   --version         output version information and exit
 
 Available commands are:
 %%s
-See '%s <host> <port> <command> --help' for more information
+See '%s <command> --help' for more information
 on a specific command.
 """.lstrip() % (__prog__, __prog__)
 
@@ -86,8 +97,7 @@ def main(host, port, timeout, command, args):
     xbmc.close()
 
 def parse_args():
-  host = port = command = None
-  timeout = 5
+  host = port = command = timeout = None
   arg_len = len(sys.argv)
   key = 1
   while key < arg_len:
@@ -101,9 +111,11 @@ def parse_args():
     elif sys.argv[key] == '--timeout':
       key += 1
       timeout = sys.argv[key]
-    elif not host:
+    elif sys.argv[key] == '--host':
+      key += 1
       host = sys.argv[key]
-    elif not port:
+    elif sys.argv[key] == '--port':
+      key += 1
       port = sys.argv[key]
     elif not command:
       command = sys.argv[key]
@@ -134,17 +146,31 @@ def find_command_class(command):
 if __name__ == '__main__':
   host, port, timeout, command, args = parse_args()
 
+  configp = configparser.SafeConfigParser()
+  configp.read(os.path.expanduser("~/.config/xbmc-command.cfg"))
+
+  if configp.has_section('XBMC'):
+    if not host and configp.has_option('XBMC', 'host'):
+      host = configp.get('XBMC', 'host')
+    if not port and configp.has_option('XBMC', 'port'):
+      port = configp.get('XBMC', 'port')
+    if not timeout and configp.has_option('XBMC', 'timeout'):
+      timeout = configp.get('XBMC', 'timeout')
+
   if not host or not port or not command:
     create_help()
     sys.stdout.write(__help__)
     sys.exit(1)
 
+  if not timeout:
+    timeout = 5
+
   try:
     port = int(port)
     if port < 0 or port > 65535:
-      sys.exit("invalid int value: '<port>'")
+      sys.exit("invalid int value: '<port>': '%s'" % port)
   except ValueError:
-    sys.exit("invalid int value: '<port>'")
+    sys.exit("invalid int value: '<port>': '%s'" % port)
 
   try:
     timeout = int(timeout)
