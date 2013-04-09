@@ -21,9 +21,9 @@ Arch Linux users can use the PKGBUILD-git file to create a package.
 If you want to use plyr, the lib must be installed (no runtime error if the
 module is not found). See Optional Dependencies.
 
-A configuration file can be used to specify the host, port and timeout.
-It should be installed in ROOT/usr/share/doc/xbmc-command/xbmc-command.cfg.
-Just copy it to ~/.config/xbmc-command.cfg and set the preferences.
+A configuration file can be used to specify the host, port or timeout.
+It should be installed in `ROOT/usr/share/doc/xbmc-command/xbmc-command.cfg`.
+Just copy it to `~/.config/xbmc-command.cfg` and set the preferences.
 
 Usage
 -----
