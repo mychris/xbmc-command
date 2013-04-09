@@ -143,8 +143,19 @@ def find_command_class(command):
   except AttributeError:
     return None
 
+def exit_help():
+  create_help()
+  sys.stdout.write(__help__)
+  sys.exit(1)
+
 if __name__ == '__main__':
-  host, port, timeout, command, args = parse_args()
+  try:
+    host, port, timeout, command, args = parse_args()
+  except IndexError:
+    exit_help()
+
+  if not command:
+    exit_help()
 
   configp = configparser.SafeConfigParser()
   configp.read(os.path.expanduser("~/.config/xbmc-command.cfg"))
@@ -157,10 +168,8 @@ if __name__ == '__main__':
     if not timeout and configp.has_option('XBMC', 'timeout'):
       timeout = configp.get('XBMC', 'timeout')
 
-  if not host or not port or not command:
-    create_help()
-    sys.stdout.write(__help__)
-    sys.exit(1)
+  if not host or not port:
+    exit_help()
 
   if not timeout:
     timeout = 5
