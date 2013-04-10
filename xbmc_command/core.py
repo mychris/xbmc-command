@@ -101,8 +101,8 @@ class CommandException(Exception):
 
 class Command(object):
 
-  def __init__(self, xbmc):
-    self.xbmc = xbmc
+  def __init__(self):
+    self.xbmc = None
 
   def get_active_player_id(self):
     self.xbmc.Player.GetActivePlayers()
