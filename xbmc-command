@@ -29,6 +29,7 @@ except ImportError:
 import importlib
 import inspect
 import os
+import shlex
 import socket
 import sys
 
@@ -83,6 +84,12 @@ def main(host, port, timeout, command, args):
 
   args = command.parse_args(args)
 
+  if not host:
+    exit_usage('%s: error: no host specified' % __prog__)
+
+  if not port:
+    exit_usage('%s: error: no port specified' % __prog__)
+
   try:
     xbmc.connect()
   except socket.timeout:
@@ -95,12 +102,19 @@ def main(host, port, timeout, command, args):
   finally:
     xbmc.close()
 
+def apply_alias(alias_dict, command, args):
+  for key, value in alias_dict.items():
+    if key == command:
+      alias_split = shlex.split(value)
+      return (alias_split[0], alias_split[1:] + args)
+  return (command, args)
+
 def command_type(command):
   try:
-    cmd= command.replace('-', '_')
+    cmd = command.replace('-', '_')
     return importlib.import_module('xbmc_command.%s' % cmd).Command
   except:
-    raise argparse.ArgumentTypeError("command '%s' not found" % command)
+    raise Exception("command '%s' not found" % command)
 
 class ConfigParser(configparser.SafeConfigParser, object):
 
@@ -114,24 +128,26 @@ def print_help():
   sys.stdout.write(__help__)
   sys.exit(0)
 
-def exit_usage(parser, msg):
-  parser.print_usage()
+def exit_usage(msg):
+  sys.stdout.write(__usage__)
   sys.exit(msg)
 
 if __name__ == '__main__':
-  configp = ConfigParser()
-  configp.read(os.path.expanduser("~/.config/xbmc-command.cfg"))
+  conf = ConfigParser()
+  conf.read(os.path.expanduser("~/.config/xbmc-command.cfg"))
 
   parser = argparse.ArgumentParser(prog=__prog__, add_help=False)
 
-  parser.add_argument('--host', metavar='<host>',
-      default=configp.get('XBMC', 'host'))
+  alias = {}
+  if conf.has_section('alias'):
+    for key, value in conf.items('alias'):
+      alias[key] = value
 
-  parser.add_argument('--port', metavar='<port>',
-      default=configp.get('XBMC', 'port'))
+  parser.add_argument('--host', metavar='<host>', default=conf.get('XBMC', 'host'))
 
-  parser.add_argument('--timeout', metavar='<sec>',
-      default=configp.get('XBMC', 'timeout'))
+  parser.add_argument('--port', metavar='<port>', default=conf.get('XBMC', 'port'))
+
+  parser.add_argument('--timeout', metavar='<sec>', default=conf.get('XBMC', 'timeout'))
 
   parser.add_argument('--help', action='help')
   parser.print_help = print_help
@@ -139,7 +155,7 @@ if __name__ == '__main__':
   parser.add_argument('--version', action='version')
   parser.version = __version__
 
-  parser.add_argument('command', metavar='<command>', type=command_type)
+  parser.add_argument('command', metavar='<command>')
 
   parser.add_argument('args', metavar='<args>', nargs=argparse.REMAINDER)
 
@@ -147,26 +163,34 @@ if __name__ == '__main__':
 
   args = parser.parse_args()
 
+  (args.command, args.args) = apply_alias(alias, args.command, args.args)
+
   if not args.timeout:
     args.timeout = 5
 
-  port_error = "%s: error: invalid int value: '<port>': '%s'" % \
-      (__prog__, args.port)
-  try:
-    args.port = int(args.port)
-    if args.port < 0 or args.port > 65535:
-      exit_usage(parser, port_error)
-  except ValueError:
-    exit_usage(parser, port_error)
+  if args.port:
+    port_error = "%s: error: argument --port: invalid int value: '%s'" % \
+        (__prog__, args.port)
+    try:
+      args.port = int(args.port)
+      if args.port < 0 or args.port > 65535:
+        exit_usage(port_error)
+    except ValueError:
+      exit_usage(port_error)
 
-  timeout_error = "%s: error: invalid int value --timeout: '%s'" % \
+  timeout_error = "%s: error: argument --timeout: invalid int value: '%s'" % \
       (__prog__, args.timeout)
   try:
     args.timeout = int(args.timeout)
     if args.timeout < 0:
-      exit_usage(parser, timeout_error)
+      exit_usage(timeout_error)
   except ValueError:
-    exit_usage(parser, timeout_error)
+    exit_usage(timeout_error)
+
+  try:
+    args.command = command_type(args.command)
+  except Exception as e:
+    exit_usage('%s: error: %s' % (__prog__, str(e)))
 
   try:
     main(args.host, args.port, args.timeout, args.command, args.args)

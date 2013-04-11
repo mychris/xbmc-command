@@ -28,6 +28,8 @@ Just copy it to `~/.config/xbmc-command.cfg` and set the preferences.
 Usage
 -----
 
+**help**
+
     $ xbmc-command --help
     usage: xbmc-command [--host <host>] [--port <port>] [--timeout <sec>]
                         [--help] [--version] <command> [args]
@@ -62,6 +64,22 @@ Usage
     See 'xbmc-command <command> --help' for more information
     on a specific command.
 
+**config**
+
+The config file must be stored in `~/.config/xbmc-command.cfg`.
+It consists of the sections *XBMC* and *alias*.
+
+The *XBMC* section may contain the options 'host', 'port' and 'timeout'.
+See the help.
+
+The *alias* section contains command aliases. The alias must not be quoted, but
+may contain quoted strings as arguments. If a line is indented by one or more
+spaces, the line belongs to the previous defined alias.
+
+    y = youtube --quality 1080p
+
+    shutdown = system --shutdown
+
 Dependencies
 ------------
 
@@ -72,6 +90,14 @@ Optional Dependencies
 ---------------------
 
 * plyr: Retrieve lyrics with plyr (<https://github.com/sahib/python-glyr>)
+  
+  if plyr is not properly installed (or not installed at all) xbmc-command will
+  not use this library.
+
+Note
+----
+
+xbmc-command is still under development. The interface may change over time.
 
 License
 -------
