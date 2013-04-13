@@ -84,7 +84,7 @@ Dependencies
 ------------
 
 * Python2.7
-* XBMC 12.1 "Frodo" (might work with older versions too) <http://xbmc.org/>
+* XBMC 12.0 "Frodo" (might work with older versions too) <http://xbmc.org/>
 
 Optional Dependencies
 ---------------------
