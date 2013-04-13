@@ -1,42 +1,72 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import sys
 from . import core
 
 class Command(core.Command):
 
   def call(self, args):
-    if args.quit:
+    if args.command == 'quit':
       self.xbmc.Application.Quit()
-    elif args.shutdown:
+    elif args.command == 'shutdown':
       self.xbmc.System.Shutdown()
-    elif args.reboot:
+    elif args.command == 'reboot':
       self.xbmc.System.Reboot()
-    elif args.suspend:
+    elif args.command == 'suspend':
       self.xbmc.System.Suspend()
-    elif args.hibernate:
+    elif args.command == 'hibernate':
       self.xbmc.System.Hibernate()
+    elif args.command == 'infos':
+      labels = self.__get_infos()
+
+      sys.stdout.write('XBMC version: %s\n' % labels['System.BuildVersion'])
+
+      sys.stdout.write('XBMC build date: %s\n' % labels['System.BuildDate'])
+
+      sys.stdout.write('System kernel: %s\n' % labels['System.KernelVersion'])
+
+      sys.stdout.write('Uptime: %s\n' % labels['System.Uptime'])
+
+      sys.stdout.write('Total uptime: %s\n' % labels['System.TotalUptime'])
+
+      cpu = labels['System.CPUTemperature']
+      gpu = labels['System.GPUTemperature']
+      symbol = labels['System.TemperatureUnits']
+      sys.stdout.write('CPU temperature: %s%s\n' % (cpu, symbol))
+      sys.stdout.write('GPU temperature: %s%s\n' % (gpu, symbol))
+
+      sys.stdout.write('Fan speed: %s\n' % labels['System.FanSpeed'])
+    else:
+      raise core.CommandException('Invalid command \'%s\'' % args.command)
+
+  def __get_infos(self):
+    self.xbmc.XBMC.GetInfoLabels({'labels': ['System.BuildVersion',
+      'System.BuildDate', 'System.KernelVersion', 'System.Uptime',
+      'System.TotalUptime', 'System.CPUTemperature', 'System.GPUTemperature',
+      'System.TemperatureUnits', 'System.FanSpeed']})
+    ret = self.xbmc.recv('XBMC.GetInfoLabels')
+
+    if not ret['result']['System.KernelVersion'] == 'Busy':
+      return ret['result']
+    return self.__get_infos()
 
   def create_parser(self, parser):
     parser.prog = '%s system' % core.prog
     parser.description = 'Handle the XBMC system.'
+    parser.formatter_class = argparse.RawTextHelpFormatter
+    parser.epilog = """Avaiable commands are:
+  quit       Quit the XBMC Mediacenter application
+  shutdown   Shutdown the system
+  reboot     Reboot the system
+  suspend    Suspend the system
+  hibernate  Hibernate the system
+  infos      Print XBMC system info labels
+"""
 
-    group = parser.add_mutually_exclusive_group(required=True)
-
-    group.add_argument('--quit', dest='quit', action='store_true',
-        default=False, help='Quit XBMC')
-
-    group.add_argument('--shutdown', dest='shutdown', action='store_true',
-        default=False, help='Shuts the system running XBMC down')
-
-    group.add_argument('--reboot', dest='reboot', action='store_true',
-        default=False, help='Reboots the system running XBMC')
-
-    group.add_argument('--suspend', dest='suspend', action='store_true',
-        default=False, help='Suspends the system running XBMC')
-
-    group.add_argument('--hibernate', dest='hibernate', action='store_true',
-        default=False, help='Puts the system running XBMC into hibernate mode')
+    parser.add_argument('command', metavar='<command>',
+        choices=['quit', 'shutdown', 'reboot', 'suspend', 'hibernate', 'infos'],
+        help='the action to perform.')
 
   @property
   def short_description(self):

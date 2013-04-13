@@ -78,7 +78,7 @@ spaces, the line belongs to the previous defined alias.
 
     y = youtube --quality 1080p
 
-    shutdown = system --shutdown
+    shutdown = system shutdown
 
 Dependencies
 ------------
