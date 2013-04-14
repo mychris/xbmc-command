@@ -9,6 +9,8 @@ __all__ = [
   'next',
   'prev',
 
+  'repeat',
+
   'system',
 
   'youtube',
