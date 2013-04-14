@@ -31,15 +31,16 @@ Usage
 **help**
 
     $ xbmc-command --help
-    usage: xbmc-command [--host <host>] [--port <port>] [--timeout <sec>]
-                        [--help] [--version] <command> [args]
+    usage: xbmc-command [--host <host>] [--port <port>] [--timeout <sec>] [--help]
+                        [--version]
+                        <command> ...
 
     Connects to the XBMC Mediacenter at <host>:<port> via TCP
     and executes the specified command.
 
-    If --host, --port or --timeout is not present and a config file
-    is present in ~/.config/xbmc-command.cfg, the values specified
-    in this file will be used.
+    If --host, --port or --timeout is not present and the config
+    file ~/.config/xbmc-command.cfg is readable, the values
+    specified in this file will be used.
 
     Optional arguments:
       --host <host>     connect to server at host <host>
@@ -49,11 +50,13 @@ Usage
       --version         output version information and exit
 
     Available commands are:
-      mute              Toggle mute
+      mute              Set the mute state
       volume            Set or increment/decrement the volume
       play-pause        Toggle play/pause
       next              Go to the next item in the playlist
       prev              Go to the previous item in the playlist
+      repeat            Set the repeat state
+      shuffle           Set the player shuffle mode
       system            Call system procedure
       youtube           Play a youtube video
       slideshow         Starts a Picture slideshow
