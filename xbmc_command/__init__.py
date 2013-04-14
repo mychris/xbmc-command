@@ -10,6 +10,7 @@ __all__ = [
   'prev',
 
   'repeat',
+  'shuffle',
 
   'system',
 
