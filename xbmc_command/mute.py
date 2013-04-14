@@ -13,7 +13,7 @@ class Command(core.Command):
 
   def create_parser(self, parser):
     parser.prog = '%s mute' % core.prog
-    parser.description = 'Set the mute state to mute/unmute or toggle it..'
+    parser.description = 'Set the mute state to mute/unmute or toggle it.'
 
     parser.add_argument('state', metavar='<state>', nargs='?',
         choices=['yes', 'y', 'no', 'n', 'toggle', 't'], default='toggle',
