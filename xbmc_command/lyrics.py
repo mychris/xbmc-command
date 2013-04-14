@@ -18,12 +18,13 @@ class Command(core.Command):
       self.__print(playlist['artist'][0], playlist['album'], playlist['title'],
           playlist['lyrics'])
       return
-
-    res = self.__try_plyr(playlist['artist'][0], playlist['album'], playlist['title'])
-    if res:
-      self.__print(playlist['artist'][0], playlist['album'], playlist['title'],
-        res)
-      return
+    
+    if playlist['artist'] and playlist['album'] and playlist['title']:
+      res = self.__try_plyr(playlist['artist'][0], playlist['album'], playlist['title'])
+      if res:
+        self.__print(playlist['artist'][0], playlist['album'], playlist['title'],
+          res)
+        return
 
     raise core.CommandException("No lyrics found.")
 
@@ -33,7 +34,7 @@ class Command(core.Command):
 
     player_props = self.xbmc.recv('Player.GetProperties')
     if not 'result' in player_props:
-      raise core.CommandException("Error receiving player properties.")
+      raise core.CommandException("Error retrieving player properties.")
 
     player_props = player_props['result']
 
@@ -55,10 +56,10 @@ class Command(core.Command):
     playlist = self.xbmc.recv('Playlist.GetItems')
 
     if not 'result' in playlist:
-      raise core.CommandException("Error receiving playlist properties.")
+      raise core.CommandException("Error retrieving playlist properties.")
 
     if not 'items' in playlist['result'] or not playlist['result']['items']:
-      raise core.CommandException("Error receiving current song from playlist.")
+      raise core.CommandException("Error retrieving current song from playlist.")
 
     return playlist['result']['items'][0]
 
