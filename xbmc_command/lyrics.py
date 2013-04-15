@@ -96,6 +96,6 @@ class Command(core.Command):
 
   @property
   def short_description(self):
-    return 'Get the lyrics of the current song.'
+    return 'Get the lyrics of the current song'
 
 # vim: ft=python ts=2 sts=2 sw=2 et:
