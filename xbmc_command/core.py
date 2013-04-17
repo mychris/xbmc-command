@@ -19,7 +19,7 @@ version = __version__
 class XBMC(object):
 
   def __init__(self, host, port):
-    self.__address = (host, port)
+    self.address = (host, port)
     self.__socket= socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.__buffer = ""
     self.__decode = json.JSONDecoder().raw_decode
@@ -31,7 +31,7 @@ class XBMC(object):
     self.__socket.settimeout(timeout if timeout > 0 else None)
 
   def connect(self):
-    self.__socket.connect(self.__address)
+    self.__socket.connect(self.address)
 
   def close(self):
     self.__socket.close()
@@ -103,6 +103,15 @@ class Command(object):
 
   def __init__(self):
     self.xbmc = None
+
+  def run_command(self, args):
+    try:
+      self.xbmc.connect()
+    except socket.timeout:
+      raise CommandException("Unable to connect to host %s:%s" % \
+          (self.xbmc.address[0], self.xbmc.address[1]))
+
+    self.call(args)
 
   def get_active_player_id(self):
     self.xbmc.Player.GetActivePlayers()

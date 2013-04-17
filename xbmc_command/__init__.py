@@ -22,6 +22,8 @@ __all__ = [
 
   'scan',
 
+  'wake-on-lan'
+
 ]
 
 from . import core

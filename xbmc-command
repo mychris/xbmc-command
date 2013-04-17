@@ -91,12 +91,7 @@ def main(host, port, timeout, command, args):
     exit_usage('%s: error: no port specified' % __prog__)
 
   try:
-    xbmc.connect()
-  except socket.timeout:
-    sys.exit("Unable to connect to host %s:%s" % (host, port))
-
-  try:
-    command.call(args)
+    command.run_command(args)
   except xbmc_command.core.CommandException as e:
     sys.exit(e.msg)
   finally:
