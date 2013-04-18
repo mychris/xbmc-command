@@ -63,6 +63,7 @@ Usage
       lyrics            Get the lyrics of the current song.
       notification      Shows a GUI notification
       scan              Scans the XBMC library
+      wake-on-lan       Turn the XBMC Mediacenter on via Wake-On-Lan
 
     See 'xbmc-command <command> --help' for more information
     on a specific command.
