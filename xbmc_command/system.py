@@ -37,6 +37,8 @@ class Command(core.Command):
       sys.stdout.write('GPU temperature: %s%s\n' % (gpu, symbol))
 
       sys.stdout.write('Fan speed: %s\n' % labels['System.FanSpeed'])
+      sys.stdout.write('IP address: %s\n' % labels['Network.IPAddress'])
+      sys.stdout.write('MAC address: %s\n' % labels['Network.MacAddress'])
     else:
       raise core.CommandException('Invalid command \'%s\'' % args.command)
 
@@ -44,7 +46,8 @@ class Command(core.Command):
     self.xbmc.XBMC.GetInfoLabels({'labels': ['System.BuildVersion',
       'System.BuildDate', 'System.KernelVersion', 'System.Uptime',
       'System.TotalUptime', 'System.CPUTemperature', 'System.GPUTemperature',
-      'System.TemperatureUnits', 'System.FanSpeed']})
+      'System.TemperatureUnits', 'System.FanSpeed',
+      'Network.IPAddress', 'Network.MacAddress']})
     ret = self.xbmc.recv('XBMC.GetInfoLabels')
 
     if not ret['result']['System.KernelVersion'] == 'Busy':
