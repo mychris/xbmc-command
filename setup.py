@@ -19,7 +19,7 @@ setup(
   scripts = ['xbmc-command'],
   packages = ['xbmc_command'],
   classifiers = [
-    'Development Status :: 5 - Production/Stable',
+    'Development Status :: 4 - Beta',
     'Environment :: Console',
     'Programming Language :: Python',
     'Programming Language :: Python :: 2',
