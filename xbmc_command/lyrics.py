@@ -1,67 +1,36 @@
 # -*- coding: utf-8 -*-
 
-import argparse
 import sys
 from . import core
 
 class Command(core.Command):
 
   def call(self, args):
-    player = self.get_active_player_id()
-    if player < 0:
-      raise core.CommandException("No active player found.")
+    current_song = self.__current_song()
 
-    player = self.__get_player_props(player)
-    playlist = self.__get_playlist(player)
+    artist = current_song['MusicPlayer.Artist']
+    album = current_song['MusicPlayer.Album']
+    title = current_song['MusicPlayer.Title']
+    lyrics = current_song['MusicPlayer.Lyrics']
 
-    if playlist['lyrics']:
-      self.__print(playlist['artist'][0], playlist['album'], playlist['title'],
-          playlist['lyrics'])
-      return
-    
-    if playlist['artist'] and playlist['album'] and playlist['title']:
-      res = self.__try_plyr(playlist['artist'][0], playlist['album'], playlist['title'])
-      if res:
-        self.__print(playlist['artist'][0], playlist['album'], playlist['title'],
-          res)
-        return
+    if not lyrics and not artist and not album and not title:
+      raise core.CommandException("No Music playing")
 
-    raise core.CommandException("No lyrics found.")
+    if not lyrics and artist and album and title:
+      lyrics = self.__try_plyr(artist, album, title)
 
-  def __get_player_props(self, playerid):
-    self.xbmc.Player.GetProperties({'playerid': playerid, 'properties':
-      ['type', 'playlistid', 'position']})
+    if lyrics:
+      self.__print(artist, album, title, lyrics)
+    else:
+      raise core.CommandException("No lyrics found.")
 
-    player_props = self.xbmc.recv('Player.GetProperties')
-    if not 'result' in player_props:
-      raise core.CommandException("Error retrieving player properties.")
-
-    player_props = player_props['result']
-
-    if player_props['type'] != 'audio':
-      raise core.CommandException("Active player is not an audio player.")
-
-    if player_props['playlistid'] < 0 or player_props['position'] < 0:
-      raise core.CommandException("No song found")
-
-    player_props['playerid'] = playerid
-    return player_props
-
-  def __get_playlist(self, player_props):
-    self.xbmc.Playlist.GetItems({'playlistid':player_props['playlistid'],
-      'limits': {'start': player_props['position'],
-        'end': player_props['position'] + 1},
-      'properties': ['title', 'artist', 'album', 'lyrics']})
-
-    playlist = self.xbmc.recv('Playlist.GetItems')
-
-    if not 'result' in playlist:
-      raise core.CommandException("Error retrieving playlist properties.")
-
-    if not 'items' in playlist['result'] or not playlist['result']['items']:
-      raise core.CommandException("Error retrieving current song from playlist.")
-
-    return playlist['result']['items'][0]
+  def __current_song(self):
+    self.xbmc.XBMC.GetInfoLabels({'labels': ['MusicPlayer.Artist',
+      'MusicPlayer.Title', 'MusicPlayer.Album', 'MusicPlayer.Lyrics']})
+    result = self.xbmc.recv('XBMC.GetInfoLabels')
+    if not 'result' in result:
+      raise core.CommandException("Error retrieving info labels")
+    return result['result']
 
   def __try_plyr(self, artist, album, title):
     try:
