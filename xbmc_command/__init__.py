@@ -22,7 +22,9 @@ __all__ = [
 
   'scan',
 
-  'wake-on-lan'
+  'wake-on-lan',
+
+  'rpc'
 
 ]
 

@@ -8,6 +8,11 @@ run one command per execution.
 It can handle tasks like 'volume up' or 'play youtube video'.
 See the help for all available commands.
 
+You can also send arbitrary JSON RPCs and use this program in your own scripts
+
+    xbmc-command rpc XBMC.GetInfoLabels '{"labels": ["MusicPlayer.Artist"]}' --id test
+
+
 Installation
 ------------
 
@@ -64,6 +69,7 @@ Usage
       notification      Shows a GUI notification
       scan              Scans the XBMC library
       wake-on-lan       Turn the XBMC Mediacenter on via Wake-On-Lan
+      rpc               Send an arbitrary JSON RPC
 
     See 'xbmc-command <command> --help' for more information
     on a specific command.
