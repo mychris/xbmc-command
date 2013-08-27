@@ -25,6 +25,7 @@ package() {
   cd $_gitname
   python2 setup.py install --root="${pkgdir}/" --optimize=1
   install -D -m644 LICENSE "${pkgdir}/usr/share/licenses/${_gitname}/LICENSE"
+  install -D -m644 bash-completion.bash "${pkgdir}/usr/share/bash-completion/completions/xbmc-command"
 }
 
 # vim: ts=2 sts=2 sw=2 et:
