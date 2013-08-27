@@ -8,3 +8,6 @@ build/
 
 *.egg
 *.egg-info
+
+xbmc-command.build/
+xbmc-command.exe
