@@ -12,7 +12,7 @@ class Command(core.Command):
     self.xbmc.Player.PlayPause({'playerid': player_id})
 
   def create_parser(self, parser):
-    parser.prog = '%s play_pause' % core.prog
+    parser.prog = '%s play-pause' % core.prog
     parser.description = 'Toggle play/pause.'
 
   @property
