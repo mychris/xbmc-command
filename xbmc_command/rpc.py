@@ -7,8 +7,8 @@ from . import core
 class Command(core.Command):
 
   def call(self, args):
+    id = args.id if args.id else args.method
     method = args.method.split('.')
-    id = args.id if args.id else method
     if len(method) != 2:
       raise core.CommandException("Invalid method name '%s'" % args.method)
 
