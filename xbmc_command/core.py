@@ -50,8 +50,11 @@ class XBMC(object):
 
     while True:
       if self.__timeout > 0 and time.time() - start > self.__timeout:
-        break
-      data = self.__socket.recv(1024)
+        raise CommandException("read timeout")
+      try:
+        data = self.__socket.recv(1024)
+      except socket.timeout:
+        raise CommandException("read timeout")
       if not data:
         return None
       self.__buffer += data.decode('utf-8')
