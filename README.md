@@ -58,6 +58,7 @@ Usage
       mute              Set the mute state
       volume            Set or increment/decrement the volume
       play-pause        Toggle play/pause
+      play-music        Start playing music
       next              Go to the next item in the playlist
       prev              Go to the previous item in the playlist
       repeat            Set the repeat state
@@ -65,7 +66,7 @@ Usage
       system            Call system procedure
       youtube           Play a youtube video
       slideshow         Starts a Picture slideshow
-      lyrics            Get the lyrics of the current song.
+      lyrics            Get the lyrics of the current song
       notification      Shows a GUI notification
       scan              Scans the XBMC library
       wake-on-lan       Turn the XBMC Mediacenter on via Wake-On-Lan

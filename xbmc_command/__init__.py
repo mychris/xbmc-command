@@ -5,6 +5,7 @@ __all__ = [
   'volume',
 
   'play-pause',
+  'play-music',
 
   'next',
   'prev',
