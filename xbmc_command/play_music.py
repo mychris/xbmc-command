@@ -24,7 +24,7 @@ class Command(core.Command):
         }
     self.xbmc.AudioLibrary.GetArtists(params = {'sort': sort})
     artists = self.xbmc.recv('AudioLibrary.GetArtists')['result']['artists']
-    artists = filter(lambda a: regex.match(a['artist']) != None, artists)
+    artists = filter(lambda a: regex.search(a['artist']) != None, artists)
 
     if not artists:
       raise core.CommandException("No artists found for regex '%s'" % artist)
@@ -45,7 +45,7 @@ class Command(core.Command):
     self.xbmc.AudioLibrary.GetAlbums(params = {'sort': sort})
     albums = self.xbmc.recv('AudioLibrary.GetAlbums')
     albums = albums['result']['albums']
-    albums = filter(lambda a: regex.match(a['label']) != None, albums)
+    albums = filter(lambda a: regex.search(a['label']) != None, albums)
     if not albums:
       raise core.CommandException("No albums found for regex '%s'" % album)
 
@@ -64,7 +64,7 @@ class Command(core.Command):
         }
     self.xbmc.AudioLibrary.GetGenres(params = {'sort': sort})
     genres = self.xbmc.recv('AudioLibrary.GetGenres')['result']['genres']
-    genres = filter(lambda g: regex.match(g['label']) != None, genres)
+    genres = filter(lambda g: regex.search(g['label']) != None, genres)
     if not genres:
       raise core.CommandException("No genres found for regex '%s'" % genre)
 
