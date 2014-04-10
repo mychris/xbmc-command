@@ -23,7 +23,7 @@ class XBMC(object):
     self.__socket= socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.__buffer = ""
     self.__decode = json.JSONDecoder().raw_decode
-    
+
     self.settimeout(0)
 
   def settimeout(self, timeout):
@@ -34,7 +34,8 @@ class XBMC(object):
     self.__socket.connect(self.address)
 
   def close(self):
-    self.__socket.close()
+    if self.__socket:
+      self.__socket.close()
 
   def shutdown(self):
     self.__socket.shutdown(socket.SHUT_RDWR)
@@ -113,6 +114,10 @@ class Command(object):
     except socket.timeout:
       raise CommandException("Unable to connect to host %s:%s" % \
           (self.xbmc.address[0], self.xbmc.address[1]))
+    except socket.error, (value, message):
+      if self.__socket:
+        self.xbmc.close()
+      raise CommandException("Could not open socket: " + message)
 
     self.call(args)
 
