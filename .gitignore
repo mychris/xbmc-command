@@ -3,6 +3,7 @@
 pkg/
 src/
 build/
+tags
 
 *.tar.xz
 
