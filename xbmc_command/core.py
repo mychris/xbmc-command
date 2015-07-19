@@ -115,8 +115,7 @@ class Command(object):
       raise CommandException("Unable to connect to host %s:%s" % \
           (self.xbmc.address[0], self.xbmc.address[1]))
     except socket.error, (value, message):
-      if self.__socket:
-        self.xbmc.close()
+      self.xbmc.close()
       raise CommandException("Could not open socket: " + message)
 
     self.call(args)
