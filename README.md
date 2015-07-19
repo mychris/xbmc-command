@@ -1,9 +1,9 @@
 xbmc-command
 ============
 
-A simple terminal XBMC command client. Connects to the XBMC Mediacenter via
-TCP and sends JSON-RPC requests. The client is not interactive and can only
-run one command per execution.
+A simple terminal Kodi/XBMC command client. Connects to the
+Kodi/XBMC Mediacenter via TCP and sends JSON-RPC requests. The client is not
+interactive and can only run one command per execution.
 
 It can handle tasks like 'volume up' or 'play youtube video'.
 See the help for all available commands.
@@ -95,7 +95,7 @@ Dependencies
 ------------
 
 * Python2.7
-* XBMC 12.0 "Frodo" (might work with older versions too) <http://xbmc.org/>
+* Kodi (XBMC) 14.0 "Helix" (might work with older versions too) <http://kodi.tv/>
 
 Optional Dependencies
 ---------------------
@@ -108,7 +108,9 @@ Optional Dependencies
 Note
 ----
 
-xbmc-command is still under development. The interface may change over time.
+I use xbmc-command on a daily base. Updates don't come very frequently because
+it works for me. If you have any issues or want some feature, create an issue
+and let me know (or fork and send a pull request).
 
 License
 -------
