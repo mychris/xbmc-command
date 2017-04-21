@@ -8,7 +8,7 @@ interactive and can only run one command per execution.
 It can handle tasks like 'volume up' or 'play youtube video'.
 See the help for all available commands.
 
-You can also send arbitrary JSON RPCs and use this program in your own scripts
+You can also send arbitrary JSON RPCs and use this program in your own scripts:
 
     xbmc-command rpc XBMC.GetInfoLabels '{"labels": ["MusicPlayer.Artist"]}' --id test
 
@@ -18,7 +18,7 @@ http://kodi.wiki/view/JSON-RPC_API#Enabling_JSON-RPC
 Installation
 ------------
 
-run `# python setup.py install` in the root directory of this repository.
+run `# python2 setup.py install` in the root directory of this repository.
 
 Arch Linux users can use the PKGBUILD-git file to create a package.
 

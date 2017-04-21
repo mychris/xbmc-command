@@ -1,6 +1,6 @@
-# xbmc-commabd bash completion
+# xbmc-command bash completion
 
-__xbmc-command()
+__xbmc-command ()
 {
   local cur commands comm opt c
 
