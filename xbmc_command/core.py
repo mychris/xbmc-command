@@ -13,7 +13,7 @@ else:
 __prog__ = 'xbmc-command'
 PROG = __prog__
 
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 VERSION = __version__
 
 class XBMC(object):
