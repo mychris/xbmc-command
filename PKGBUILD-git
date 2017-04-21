@@ -1,7 +1,7 @@
 # Maintainer: mychris <just dot mychris funnychar googlemail dot com>
 pkgname=xbmc-command-git
-_gitname=xbmc-command
-pkgver=
+_gitname="${pkgname%-git}"
+pkgver=VERSION
 pkgrel=1
 pkgdesc="Simple xbmc-command client."
 arch=('any')
@@ -13,12 +13,12 @@ makedepends=('git' 'python2-setuptools')
 provides=('xbmc-command')
 conflicts=()
 options=(!emptydirs)
-source=('git://github.com/mychris/xbmc-command')
+source=("git://github.com/mychris/${_gitname}")
 md5sums=('SKIP')
 
 pkgver() {
-  cd $_gitname
-  git describe --always | sed 's|-|.|g'
+  cd "$srcdir/${_gitname}"
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
 
 package() {
