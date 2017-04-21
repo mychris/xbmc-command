@@ -22,174 +22,171 @@
 import argparse
 
 try:
-  import ConfigParser as configparser
+    import ConfigParser as configparser
 except ImportError:
-  import configparser
+    import configparser
 
 import importlib
-import inspect
 import os
 import shlex
-import socket
 import sys
 
 import xbmc_command
 
-__prog__ = xbmc_command.core.prog
-__version__ = xbmc_command.core.version
+__prog__ = xbmc_command.core.PROG
+__version__ = xbmc_command.core.VERSION
 
 __usage__ = ""
 
-__help__ = """
-%%s
-Connects to the XBMC Mediacenter at <host>:<port> via TCP
-and executes the specified command.
-
-If --host, --port or --timeout is not present and the config
-file ~/.config/xbmc-command.cfg is readable, the values
-specified in this file will be used.
-
-Optional arguments:
-  --host <host>     connect to server at host <host>
-  --port <port>     connect to server at port <port>
-  --timeout <sec>   wait <sec> till timeout, default 5
-  --help            show this help message and exit
-  --version         output version information and exit
-
-Available commands are:
-%%s
-See '%s <command> --help' for more information
-on a specific command.
-""".lstrip() % (__prog__)
+__help__ = ""
+__help__ += "%%s\n"
+__help__ += "Connects to the XBMC Mediacenter at <host>:<port> via TCP\n"
+__help__ += "and executes the specified command.\n"
+__help__ += "\n"
+__help__ += "If --host, --port or --timeout is not present and the config\n"
+__help__ += "file ~/.config/xbmc-command.cfg is readable, the values\n"
+__help__ += "specified in this file will be used.\n"
+__help__ += "\n"
+__help__ += "Optional arguments:\n"
+__help__ += "  --host <host>     connect to server at host <host>\n"
+__help__ += "  --port <port>     connect to server at port <port>\n"
+__help__ += "  --timeout <sec>   wait <sec> till timeout, default 5\n"
+__help__ += "  --help            show this help message and exit\n"
+__help__ += "  --version         output version information and exit\n"
+__help__ += "\n"
+__help__ += "Available commands are:\n"
+__help__ += "%%s\n"
+__help__ += "See '%s <command> --help' for more information\n"
+__help__ += "on a specific command.\n"
+__help__ = __help__.lstrip() % (__prog__)
 
 __version__ = "%s version %s\n" % (__prog__, __version__)
 
 def create_help():
-  global __help__
-  shift = str(len('usage: ' + __prog__ + ' ') - 3)
-  available_commands = ''
-  for command in xbmc_command.__all__:
-    available_commands += '  %-' + shift + 's %s\n'
-    cmd = command_type(command)()
-    available_commands = available_commands % (command, cmd.short_description)
+    shift = str(len('usage: ' + __prog__ + ' ') - 3)
+    available_commands = ''
+    for command in xbmc_command.__all__:
+        available_commands += '  %-' + shift + 's %s\n'
+        cmd = command_type(command)()
+        available_commands = available_commands % (command, cmd.short_description)
 
-  __help__ = __help__ % (__usage__, available_commands)
+    return __help__ % (__usage__, available_commands)
 
 def main(host, port, timeout, command, args):
-  command = command()
+    command = command()
 
-  xbmc = xbmc_command.core.XBMC(host, port)
-  xbmc.settimeout(timeout)
-  command.xbmc = xbmc
+    xbmc = xbmc_command.core.XBMC(host, port)
+    xbmc.settimeout(timeout)
+    command.xbmc = xbmc
 
-  args = command.parse_args(args)
+    args = command.parse_args(args)
 
-  if not host:
-    exit_usage('%s: error: no host specified' % __prog__)
+    if not host:
+        exit_usage('%s: error: no host specified' % __prog__)
 
-  if not port:
-    exit_usage('%s: error: no port specified' % __prog__)
+    if not port:
+        exit_usage('%s: error: no port specified' % __prog__)
 
-  try:
-    command.run_command(args)
-  except xbmc_command.core.CommandException as e:
-    sys.exit(e.msg)
-  finally:
-    xbmc.close()
+    try:
+        command.run_command(args)
+    except xbmc_command.core.CommandException as err:
+        sys.exit(err.msg)
+    finally:
+        xbmc.close()
 
 def apply_alias(alias_dict, command, args):
-  for key, value in alias_dict.items():
-    if key == command:
-      alias_split = shlex.split(value)
-      return (alias_split[0], alias_split[1:] + args)
-  return (command, args)
+    for key, value in alias_dict.items():
+        if key == command:
+            alias_split = shlex.split(value)
+            return (alias_split[0], alias_split[1:] + args)
+    return (command, args)
 
 def command_type(command):
-  try:
-    cmd = command.replace('-', '_')
-    return importlib.import_module('xbmc_command.%s' % cmd).Command
-  except:
-    raise Exception("command '%s' not found" % command)
+    try:
+        cmd = command.replace('-', '_')
+        return importlib.import_module('xbmc_command.%s' % cmd).Command
+    except:
+        raise RuntimeError("command '%s' not found" % command)
 
 class ConfigParser(configparser.SafeConfigParser, object):
 
-  def get(self, section, option):
-    if not self.has_section(section) or not self.has_option(section, option):
-      return None
-    return super(ConfigParser, self).get(section, option)
+    def get(self, section, option):
+        if not self.has_section(section) or not self.has_option(section, option):
+            return None
+        return super(ConfigParser, self).get(section, option)
 
 def print_help():
-  create_help()
-  sys.stdout.write(__help__)
-  sys.exit(0)
+    __help__ = create_help()
+    sys.stdout.write(__help__)
+    sys.exit(0)
 
 def exit_usage(msg):
-  sys.stdout.write(__usage__)
-  sys.exit(msg)
+    sys.stdout.write(__usage__)
+    sys.exit(msg)
 
 if __name__ == '__main__':
-  conf = ConfigParser()
-  conf.read(os.path.expanduser("~/.config/xbmc-command.cfg"))
+    CONF = ConfigParser()
+    CONF.read(os.path.expanduser("~/.config/xbmc-command.cfg"))
 
-  parser = argparse.ArgumentParser(prog=__prog__, add_help=False)
+    PARSER = argparse.ArgumentParser(prog=__prog__, add_help=False)
 
-  alias = {}
-  if conf.has_section('alias'):
-    for key, value in conf.items('alias'):
-      alias[key] = value
+    ALIAS = {}
+    if CONF.has_section('alias'):
+        for _KEY, _VALUE in CONF.items('alias'):
+            ALIAS[_KEY] = _VALUE
 
-  parser.add_argument('--host', metavar='<host>', default=conf.get('XBMC', 'host'))
+    PARSER.add_argument('--host', metavar='<host>', default=CONF.get('XBMC', 'host'))
 
-  parser.add_argument('--port', metavar='<port>', default=conf.get('XBMC', 'port'))
+    PARSER.add_argument('--port', metavar='<port>', default=CONF.get('XBMC', 'port'))
 
-  parser.add_argument('--timeout', metavar='<sec>', default=conf.get('XBMC', 'timeout'))
+    PARSER.add_argument('--timeout', metavar='<sec>', default=CONF.get('XBMC', 'timeout'))
 
-  parser.add_argument('--help', action='help')
-  parser.print_help = print_help
+    PARSER.add_argument('--help', action='help')
+    PARSER.print_help = print_help
 
-  parser.add_argument('--version', action='version')
-  parser.version = __version__
+    PARSER.add_argument('--version', action='version')
+    PARSER.version = __version__
 
-  parser.add_argument('command', metavar='<command>')
+    PARSER.add_argument('command', metavar='<command>')
 
-  parser.add_argument('args', metavar='<args>', nargs=argparse.REMAINDER)
+    PARSER.add_argument('args', metavar='<args>', nargs=argparse.REMAINDER)
 
-  __usage__ = parser.format_usage()
+    __usage__ = PARSER.format_usage()
 
-  args = parser.parse_args()
+    ARGS = PARSER.parse_args()
 
-  (args.command, args.args) = apply_alias(alias, args.command, args.args)
+    (ARGS.command, ARGS.args) = apply_alias(ALIAS, ARGS.command, ARGS.args)
 
-  if not args.timeout:
-    args.timeout = 5
+    if not ARGS.timeout:
+        ARGS.timeout = 5
 
-  if args.port:
-    port_error = "%s: error: argument --port: invalid int value: '%s'" % \
-        (__prog__, args.port)
+    if ARGS.port:
+        PORT_ERROR = "%s: error: argument --port: invalid int value: '%s'" % \
+            (__prog__, ARGS.port)
+        try:
+            ARGS.port = int(ARGS.port)
+            if ARGS.port < 0 or ARGS.port > 65535:
+                exit_usage(PORT_ERROR)
+        except ValueError:
+            exit_usage(PORT_ERROR)
+
+    TIMEOUT_ERROR = "%s: error: argument --timeout: invalid int value: '%s'" % \
+        (__prog__, ARGS.timeout)
     try:
-      args.port = int(args.port)
-      if args.port < 0 or args.port > 65535:
-        exit_usage(port_error)
+        ARGS.timeout = int(ARGS.timeout)
+        if ARGS.timeout < 0:
+            exit_usage(TIMEOUT_ERROR)
     except ValueError:
-      exit_usage(port_error)
+        exit_usage(TIMEOUT_ERROR)
 
-  timeout_error = "%s: error: argument --timeout: invalid int value: '%s'" % \
-      (__prog__, args.timeout)
-  try:
-    args.timeout = int(args.timeout)
-    if args.timeout < 0:
-      exit_usage(timeout_error)
-  except ValueError:
-    exit_usage(timeout_error)
+    try:
+        ARGS.command = command_type(ARGS.command)
+    except RuntimeError as err:
+        exit_usage('%s: error: %s' % (__prog__, str(err)))
 
-  try:
-    args.command = command_type(args.command)
-  except Exception as e:
-    exit_usage('%s: error: %s' % (__prog__, str(e)))
+    try:
+        main(ARGS.host, ARGS.port, ARGS.timeout, ARGS.command, ARGS.args)
+    except KeyboardInterrupt:
+        sys.stdout.write('\n')
 
-  try:
-    main(args.host, args.port, args.timeout, args.command, args.args)
-  except KeyboardInterrupt:
-    sys.stdout.write('\n')
-
-# vim: ft=python ts=2 sts=2 sw=2 et:
+# vim: ft=python ts=8 sts=4 sw=4 et:

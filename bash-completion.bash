@@ -6,7 +6,9 @@ __xbmc-command()
 
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
-  commands="mute volume play-pause play-music next prev repeat shuffle system youtube twitch slideshow lyrics notification scan wake-on-lan rpc"
+  commands="mute volume play-pause play-music next prev repeat shuffle"
+  commands="${commands} system youtube twitch slideshow lyrics notification"
+  commands="${commands} scan wake-on-lan rpc"
   opt="--host --port --timeout --help --version"
 
   for c in ${commands}; do

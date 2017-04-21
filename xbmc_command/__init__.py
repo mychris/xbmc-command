@@ -1,35 +1,35 @@
+# -*- coding: utf-8 -*-
+# pylint:disable=undefined-all-variable
 
 __all__ = [
-  
-  'mute',
-  'volume',
+    'mute',
+    'volume',
 
-  'play-pause',
-  'play-music',
+    'play-pause',
+    'play-music',
 
-  'next',
-  'prev',
+    'next',
+    'prev',
 
-  'repeat',
-  'shuffle',
+    'repeat',
+    'shuffle',
 
-  'system',
+    'system',
 
-  'youtube',
-  'twitch',
-  'slideshow',
-  'lyrics',
+    'youtube',
+    'twitch',
+    'slideshow',
+    'lyrics',
 
-  'notification',
+    'notification',
 
-  'scan',
+    'scan',
 
-  'wake-on-lan',
+    'wake-on-lan',
 
-  'rpc'
-
+    'rpc'
 ]
 
 from . import core
 
-# vim: ft=python ts=2 sts=2 sw=2 et:
+# vim: ft=python ts=8 sts=4 sw=4 et:
