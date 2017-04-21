@@ -27,8 +27,6 @@ class Command(core.Command):
       raise core.CommandException("Unable to parse channel")
 
     uri = uri_template % (channel, quality)
-    print(uri)
-    return
     self.xbmc.Player.Open({'item': {'file': uri}})
 
   def quality_to_ident(self, quality):
