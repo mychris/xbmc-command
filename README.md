@@ -65,6 +65,7 @@ Usage
       shuffle           Set the player shuffle mode
       system            Call system procedure
       youtube           Play a youtube video
+      twitch            Play a twitch channel
       slideshow         Starts a Picture slideshow
       lyrics            Get the lyrics of the current song
       notification      Shows a GUI notification

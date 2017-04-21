@@ -52,6 +52,9 @@ __xbmc-command()
       youtube)
         COMPREPLY=( $(compgen -W "--help --quaility 1080p 720p low" -- $cur) )
         ;;
+      twitch)
+        COMPREPLY=( $(compgen -W "--help --quaility 1080p60 1080p30 720p60 720p30 dialog" -- $cur) )
+        ;;
       slideshow)
         COMPREPLY=( $(compgen -W "--help --dir --stop" -- $cur) )
         ;;

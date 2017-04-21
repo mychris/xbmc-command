@@ -16,6 +16,7 @@ __all__ = [
   'system',
 
   'youtube',
+  'twitch',
   'slideshow',
   'lyrics',
 
