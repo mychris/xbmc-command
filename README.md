@@ -12,6 +12,8 @@ You can also send arbitrary JSON RPCs and use this program in your own scripts
 
     xbmc-command rpc XBMC.GetInfoLabels '{"labels": ["MusicPlayer.Artist"]}' --id test
 
+You have to **enable** the JSON-RPC API within Kodi:
+http://kodi.wiki/view/JSON-RPC_API#Enabling_JSON-RPC
 
 Installation
 ------------
@@ -26,7 +28,7 @@ Arch Linux users can use the PKGBUILD-git file to create a package.
 If you want to use plyr, the lib must be installed (no runtime error if the
 module is not found). See Optional Dependencies.
 
-A configuration file can be used to specify the host, port or timeout.
+A **configuration file** can be used to specify the host, port or timeout.
 It should be installed in `ROOT/usr/share/doc/xbmc-command/xbmc-command.cfg`.
 Just copy it to `~/.config/xbmc-command.cfg` and set the preferences.
 
