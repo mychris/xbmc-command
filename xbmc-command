@@ -110,6 +110,10 @@ def command_type(command):
 
 class ConfigParser(configparser.SafeConfigParser, object):
 
+    def __init__(self):
+        configparser.SafeConfigParser.__init__(self)
+        self.optionxform = str
+
     def get(self, section, option):
         if not self.has_section(section) or not self.has_option(section, option):
             return None
