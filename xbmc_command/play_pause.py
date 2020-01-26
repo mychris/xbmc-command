@@ -7,9 +7,12 @@ class Command(core.Command):
     def call(self, args):
         player_id = self.get_active_player_id()
         if player_id < 0:
-            return
+            raise core.CommandException('No active player found')
 
-        self.xbmc.Player.PlayPause({'playerid': player_id})
+        self.xbmc.Player.PlayPause({'playerid': player_id, 'play': 'toggle'})
+        result = self.xbmc.recv('Player.PlayPause')
+        if 'error' in result:
+            raise core.CommandException(result['error']['message'])
 
     def create_parser(self, parser):
         parser.prog = '%s play-pause' % core.PROG
