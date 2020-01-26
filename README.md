@@ -18,7 +18,7 @@ http://kodi.wiki/view/JSON-RPC_API#Enabling_JSON-RPC
 Installation
 ------------
 
-run `# python2 setup.py install` in the root directory of this repository.
+run `# python3 setup.py install` in the root directory of this repository.
 
 Arch Linux users can use the PKGBUILD-git file to create a package.
 
@@ -97,7 +97,7 @@ spaces, the line belongs to the previous defined alias.
 Dependencies
 ------------
 
-* Python2.7
+* Python3
 * Kodi (XBMC) 14.0 "Helix" (might work with older versions too) <http://kodi.tv/>
 
 Optional Dependencies

@@ -2,7 +2,7 @@
 
 from . import core
 try:
-    import urlparse
+    import urllib.parse
 except ImportError:
     import urllib.parse as urlparse
 
@@ -11,8 +11,8 @@ class Command(core.Command):
     def call(self, args):
         xbmc_file = 'plugin://plugin.video.youtube/?action=play_video&videoid=%s'
         try:
-            url = urlparse.urlparse(args.link)
-            url_query = urlparse.parse_qs(url.query)
+            url = urllib.parse.urlparse(args.link)
+            url_query = urllib.parse.parse_qs(url.query)
             if 'v' not in url_query:
                 raise core.CommandException("No youtube video id found in given url.")
             xbmc_file = xbmc_file % url_query['v'][0]

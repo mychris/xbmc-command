@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # simple XBMC command client.
@@ -22,7 +22,7 @@
 import argparse
 
 try:
-    import ConfigParser as configparser
+    import configparser as configparser
 except ImportError:
     import configparser
 
@@ -95,7 +95,7 @@ def main(host, port, timeout, command, args):
         xbmc.close()
 
 def apply_alias(alias_dict, command, args):
-    for key, value in alias_dict.items():
+    for key, value in list(alias_dict.items()):
         if key == command:
             alias_split = shlex.split(value)
             return (alias_split[0], alias_split[1:] + args)
@@ -108,16 +108,16 @@ def command_type(command):
     except:
         raise RuntimeError("command '%s' not found" % command)
 
-class ConfigParser(configparser.SafeConfigParser, object):
+class ConfigParser(configparser.ConfigParser, object):
 
     def __init__(self):
-        configparser.SafeConfigParser.__init__(self)
+        configparser.ConfigParser.__init__(self)
         self.optionxform = str
 
-    def get(self, section, option):
+    def get(self, section, option, **kwargs):
         if not self.has_section(section) or not self.has_option(section, option):
             return None
-        return super(ConfigParser, self).get(section, option)
+        return super(ConfigParser, self).get(section, option, **kwargs)
 
 def print_help():
     __help__ = create_help()

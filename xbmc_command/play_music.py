@@ -25,7 +25,7 @@ class Command(core.Command):
         }
         self.xbmc.AudioLibrary.GetArtists(params={'sort': sort})
         artists = self.xbmc.recv('AudioLibrary.GetArtists')['result']['artists']
-        artists = filter(lambda a: regex.search(a['artist']) != None, artists)
+        artists = [a for a in artists if regex.search(a['artist']) != None]
 
         if not artists:
             raise core.CommandException("No artists found for regex '%s'" %
@@ -33,9 +33,9 @@ class Command(core.Command):
 
         if dry:
             for artist in artists:
-                print(artist['artist'].encode('utf-8'))
+                print((artist['artist'].encode('utf-8')))
             return
-        self.__play({'artist': map(lambda a: a['artistid'], artists)})
+        self.__play({'artist': [a['artistid'] for a in artists]})
 
     def __call_album(self, album_regex, dry):
         regex = self.__try_regex(album_regex)
@@ -47,16 +47,16 @@ class Command(core.Command):
         self.xbmc.AudioLibrary.GetAlbums(params={'sort': sort})
         albums = self.xbmc.recv('AudioLibrary.GetAlbums')
         albums = albums['result']['albums']
-        albums = filter(lambda a: regex.search(a['label']) != None, albums)
+        albums = [a for a in albums if regex.search(a['label']) != None]
         if not albums:
             raise core.CommandException("No albums found for regex '%s'" %
                                         album_regex)
 
         if dry:
             for album in albums:
-                print(album['label'].encode('utf-8'))
+                print((album['label'].encode('utf-8')))
             return
-        self.__play({'album': map(lambda a: a['albumid'], albums)})
+        self.__play({'album': [a['albumid'] for a in albums]})
 
     def __call_genre(self, genre_regex, dry):
         regex = self.__try_regex(genre_regex)
@@ -67,22 +67,22 @@ class Command(core.Command):
         }
         self.xbmc.AudioLibrary.GetGenres(params={'sort': sort})
         genres = self.xbmc.recv('AudioLibrary.GetGenres')['result']['genres']
-        genres = filter(lambda g: regex.search(g['label']) != None, genres)
+        genres = [g for g in genres if regex.search(g['label']) != None]
         if not genres:
             raise core.CommandException("No genres found for regex '%s'" %
                                         genre_regex)
 
         if dry:
             for genre in genres:
-                print(genre['label'].encode('utf-8'))
+                print((genre['label'].encode('utf-8')))
             return
-        self.__play({'genre': map(lambda g: g['genreid'], genres)})
+        self.__play({'genre': [g['genreid'] for g in genres]})
 
     def __play(self, play_dict):
         audio_pl = self.__get_playlist()
         self.xbmc.Playlist.Clear(params={'playlistid': audio_pl})
 
-        for item_type, item_ids in play_dict.items():
+        for item_type, item_ids in list(play_dict.items()):
             if item_type == 'album':
                 item_type = 'albumid'
             elif item_type == 'artist':
@@ -108,8 +108,7 @@ class Command(core.Command):
     def __get_playlist(self):
         self.xbmc.Playlist.GetPlaylists()
         playlists = self.xbmc.recv("Playlist.GetPlaylists")
-        filtered = list(filter(lambda pl: pl['type'] == 'audio',
-                               playlists['result']))
+        filtered = list([pl for pl in playlists['result'] if pl['type'] == 'audio'])
         return filtered[0]['playlistid']
 
     def create_parser(self, parser):

@@ -5,7 +5,7 @@
 from . import core
 
 try:
-    import urlparse
+    import urllib.parse
 except ImportError:
     import urllib.parse as urlparse
 
@@ -17,7 +17,7 @@ class Command(core.Command):
         quality = self.quality_to_ident(args.quality) if args.quality else 0
 
         channel = args.link
-        url = urlparse.urlparse(args.link)
+        url = urllib.parse.urlparse(args.link)
         if not url.path:
             raise core.CommandException("No channel provided")
         channel = url.path.strip()
@@ -28,6 +28,8 @@ class Command(core.Command):
 
         uri = uri_template % (channel, quality)
         self.xbmc.Player.Open({'item': {'file': uri}})
+        result = self.xbmc.recv('Player.Open')
+        print(result)
 
     def quality_to_ident(self, quality):
         mapping = {
