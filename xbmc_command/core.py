@@ -4,11 +4,7 @@ import argparse
 import time
 import socket
 import sys
-
-if sys.version_info < (2, 7):
-    import simplejson as json
-else:
-    import json
+import json
 
 __prog__ = 'xbmc-command'
 PROG = __prog__
