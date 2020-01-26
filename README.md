@@ -118,7 +118,7 @@ and let me know (or fork and send a pull request).
 License
 -------
 
-    Copyright (C) 2013-2017 Christoph Göttschkes <just dot mychris at googlemail dot com>
+    Copyright (C) 2013-2020 Christoph Göttschkes <just dot mychris at googlemail dot com>
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
