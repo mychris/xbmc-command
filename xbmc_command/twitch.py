@@ -12,9 +12,14 @@ except ImportError:
 class Command(core.Command):
 
     def call(self, args):
-        uri_template = 'plugin://plugin.video.twitch/?mode=play&channel_name=%s&quality=%s'
+        uri_template = 'plugin://plugin.video.twitch/?mode=play&channel_name=%s&quality=%s&ask=%s'
 
-        quality = self.quality_to_ident(args.quality) if args.quality else 0
+        ask = 'false'
+        quality = 'Source'
+        if args.quality in ('dialog', 'Dialog', 'ask'):
+            ask = 'true'
+        elif args.quality not in ('source', 'Source'):
+            quality = args.quality
 
         channel = args.link
         url = urllib.parse.urlparse(args.link)
@@ -26,29 +31,9 @@ class Command(core.Command):
         if not channel:
             raise core.CommandException("Unable to parse channel")
 
-        uri = uri_template % (channel, quality)
+        uri = uri_template % (channel, quality, ask)
         self.xbmc.Player.Open({'item': {'file': uri}})
         result = self.xbmc.recv('Player.Open')
-        print(result)
-
-    def quality_to_ident(self, quality):
-        mapping = {
-            'source': 0,
-            '1080p60': 1,
-            '1080p30': 2,
-            '720p60': 3,
-            '720p30': 4,
-            '540p30': 5,
-            '480p30': 6,
-            '360p30': 7,
-            '240p30': 8,
-            '144p30': 9,
-            'dialog': -1,
-        }
-        ret = mapping.get(quality)
-        if ret != None:
-            return ret
-        raise core.CommandException("Unknow quality '%s'" % quality)
 
     def create_parser(self, parser):
         parser.prog = '%s twitch' % core.PROG
@@ -59,14 +44,10 @@ class Command(core.Command):
         parser.add_argument('link', metavar='<link>',
                             help='the url or name of the twitch channel')
 
-        parser.add_argument('--quality', dest='quality', default=None,
-                            choices=[
-                                '1080p60', '1080p30',
-                                '720p60', '720p30',
-                                'dialog'
-                            ],
+        parser.add_argument('--quality', dest='quality', default='Source',
                             help='the quality to use. By default, the source \
-                                  quality of the channel will be used.')
+                                  quality of the channel will be used. \
+                                  Use "dialog" if you wish to select it while opening the stream.')
 
     @property
     def short_description(self):
