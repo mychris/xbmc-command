@@ -12,7 +12,7 @@ except ImportError:
 class Command(core.Command):
 
     def call(self, args):
-        uri_template = 'plugin://plugin.video.twitch/playLive/%s/%s'
+        uri_template = 'plugin://plugin.video.twitch/?mode=play&channel_name=%s&quality=%s'
 
         quality = self.quality_to_ident(args.quality) if args.quality else 0
 
