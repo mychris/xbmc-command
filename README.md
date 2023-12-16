@@ -111,9 +111,7 @@ Optional Dependencies
 Note
 ----
 
-I use xbmc-command on a daily base. Updates don't come very frequently because
-it works for me. If you have any issues or want some feature, create an issue
-and let me know (or fork and send a pull request).
+Unmaintained. I am currently not using XBMC/Kodi.
 
 License
 -------
